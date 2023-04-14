@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="EditTextHintBlue">
+        <item name="colorError">@color/red</item>
+        <item name="colorPrimary">@color/orange_1</item>
+        <item name="colorOnSurface">@color/orange_2</item>
+    </style>
+    <style name="EditTextHintGray">
+        <item name="colorError">@color/red</item>
+        <item name="colorPrimary">@color/purple_2</item>
+        <item name="colorOnSurface">@color/purple_2</item>
+    </style>
+    <style name="Switch">
+        <item name="colorControlActivated">@color/green_2</item>
+        <item name="android:colorForeground">@color/green_2</item>
+
+        <item name="colorSwitchThumbNormal">@color/white</item>
+    </style>
+
+    <style name="mySpinnerItemStyle" parent="Base.Widget.AppCompat.Spinner">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@color/orange_2</item>
+    </style>
+    <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>

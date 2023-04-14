@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "151957232805",
+    "project_id": "delivery-tracking-app-717bc",
+    "storage_bucket": "delivery-tracking-app-717bc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:151957232805:android:d893e652f71fd45301c14c",
+        "android_client_info": {
+          "package_name": "com.thesis.deliverytracking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "151957232805-en1o4eutku5gkk1tg1e83e2as1r162mf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thesis.deliverytracking",
+            "certificate_hash": "e68c2085c623cf65416502451ce590d1c0163a5c"
+          }
+        },
+        {
+          "client_id": "151957232805-7htlniaq411im3tofu05q6uigp99q16u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVELDfW3zrY-37EqRkMIN_EtOjkk1PkKY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "151957232805-7htlniaq411im3tofu05q6uigp99q16u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,6 +6,9 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -36,8 +39,8 @@ import java.util.regex.Pattern;
 
 public class RegisterFragment extends Fragment {
 
-    TextInputLayout Email, Username, Role, Password;
-    String selectedRole = "";
+    TextInputLayout Email, Username, Role, Password, confirmPasswordInput;
+    String selectedRole = "Delivery";
     Button btnRegister;
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
@@ -60,11 +63,12 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        Email = view.findViewById(R.id.txtemail);
-        Username = view.findViewById(R.id.txtusername);
+        Email = view.findViewById(R.id.txtvehicleplate);
+        Username = view.findViewById(R.id.txtvehicletype);
         Role = view.findViewById(R.id.txtrole);
         Password = view.findViewById(R.id.txtpassword);
-        btnRegister = view.findViewById(R.id.btnregister);
+        confirmPasswordInput = view.findViewById(R.id.txtConfirmPassword);
+        btnRegister = view.findViewById(R.id.btn_add_vehicle);
 
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -81,6 +85,19 @@ public class RegisterFragment extends Fragment {
                         UserUsername = Username.getEditText().getText().toString();
                         UserRole = selectedRole;
                         UserPassword = Password.getEditText().getText().toString();
+                        String confirmPassword = confirmPasswordInput.getEditText().getText().toString();
+
+                        if (UserPassword.isEmpty() || confirmPassword.isEmpty()) {
+//                            showToast(R.drawable.ic_lock,"blank password is not allowed!");
+                            Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        if (!UserPassword.equals(confirmPassword)) {
+                            Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
+//                            showToast(R.drawable.ic_lock,"Password does not match!");
+                            return;
+                        }
 
                         firebaseAuth.createUserWithEmailAndPassword(UserEmail, UserPassword)
                                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -91,7 +108,7 @@ public class RegisterFragment extends Fragment {
                                             UserID = firebaseAuth.getCurrentUser().getUid();
                                             Map<String,Object> UserData = new HashMap<>();
                                             UserData.put("username", UserUsername);
-                                            UserData.put("role", UserRole);
+                                            UserData.put("role", "Delivery");
                                             firebaseFirestore.collection("users")
                                                     .document(UserID)
                                                     .set(UserData)
@@ -115,6 +132,7 @@ public class RegisterFragment extends Fragment {
                                                         public void onComplete(@NonNull Task<Void> task) {
                                                             if (task.isSuccessful()) {
                                                                 showToast(R.drawable.ic_info, "User is registered successfully.\nPlease check your inbox for verification email.");
+                                                                getActivity().getSupportFragmentManager().popBackStack();
                                                             }
                                                         }
                                                     }).addOnFailureListener(new OnFailureListener() {
@@ -137,6 +155,14 @@ public class RegisterFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        toolbar.setTitle("Register a Driver");
     }
 
     boolean emailValidation() {

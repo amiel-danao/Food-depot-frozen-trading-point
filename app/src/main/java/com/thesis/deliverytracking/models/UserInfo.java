@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 public class UserInfo {
-    public final String id;
-    public final String username;
-    public final String role;
+    public String id;
+    public String username;
+    public String role;
+
+    public UserInfo() {
+    }
 
     public UserInfo(String id, String username, String role) {
         this.id = id;

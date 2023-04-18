@@ -24,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.thesis.deliverytracking.models.UserInfo;
+import com.thesis.deliverytracking.models.Vehicle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.List;
 /**
  * A fragment representing a list of Items.
  */
-public class DriversFragment extends Fragment {
+public class VehiclesFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -43,13 +44,13 @@ public class DriversFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public DriversFragment() {
+    public VehiclesFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static DriversFragment newInstance(int columnCount) {
-        DriversFragment fragment = new DriversFragment();
+    public static VehiclesFragment newInstance(int columnCount) {
+        VehiclesFragment fragment = new VehiclesFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -74,10 +75,16 @@ public class DriversFragment extends Fragment {
         fabAddDriver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                getActivity().getSupportFragmentManager().beginTransaction()
+//                .add(new AddVehicleFragment(), "detail") // Add this transaction to the back stack (name is an optional name for this back stack state, or null).
+//                .addToBackStack(null)
+//                .commit();
+
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.body_container, new RegisterFragment(), "driversList");
-                transaction.addToBackStack("driversList");
+                transaction.replace(R.id.body_container, new AddVehicleFragment(), "vehicleList");
+                transaction.addToBackStack("vehicleList");
                 transaction.commit();
+//                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new AddVehicleFragment()).commit();
             }
         });
 
@@ -90,24 +97,25 @@ public class DriversFragment extends Fragment {
         }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<UserInfo> users = new ArrayList<>();
+        List<Vehicle> vehicles = new ArrayList<>();
 
-        db.collection("users")
-                .whereEqualTo("role", "Delivery")
+        db.collection("vehicles")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                users.add(document.toObject(UserInfo.class));
+                                Vehicle vehicle = document.toObject(Vehicle.class);
+                                vehicle.setId(document.getId());
+                                vehicles.add(vehicle);
 //                                    Log.d(TAG, document.getId() + " => " + document.getData());
                             }
                         } else {
 //                                Log.d(TAG, "Error getting documents: ", task.getException());
                         }
 
-                        recyclerView.setAdapter(new DriversRecyclerViewAdapter(users));
+                        recyclerView.setAdapter(new VehicleRecyclerViewAdapter(vehicles, getActivity()));
                     }
                 });
 
@@ -119,6 +127,6 @@ public class DriversFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("Manage Drivers");
+        toolbar.setTitle("Manage Vehicles");
     }
 }

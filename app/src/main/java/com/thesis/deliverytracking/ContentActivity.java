@@ -59,6 +59,8 @@ public class ContentActivity extends AppCompatActivity {
                 FirebaseAuth.getInstance().signOut();
             case R.id.nav_drivers:
                 getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DriversFragment()).commit();
+            case R.id.nav_vehicles:
+                getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new VehiclesFragment()).commit();
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,19 +15,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/vehicle_list"
-        android:name="com.thesis.deliverytracking.DriversFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="16dp"
-        app:layoutManager="LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:context=".DriversFragment"
-        tools:listitem="@layout/fragment_drivers">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/vehicle_list"
+            android:name="com.thesis.deliverytracking.VehicleFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            app:layoutManager="LinearLayoutManager"
+            tools:context=".VehiclesFragment"
+            tools:listitem="@layout/fragment_vehicle" >
 
 
     </androidx.recyclerview.widget.RecyclerView>

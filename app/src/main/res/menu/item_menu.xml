@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_person"
         android:title="Manage Drivers"></item>
     <item
+        android:id="@+id/nav_vehicles"
+        android:icon="@drawable/ic_person"
+        android:title="Manage Vehicles"></item>
+    <item
         android:id="@+id/nav_logout"
         android:icon="@drawable/ic_settings"
         android:title="Log out"></item>

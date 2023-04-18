@@ -100,24 +100,24 @@ public class VehiclesFragment extends Fragment {
         List<Vehicle> vehicles = new ArrayList<>();
 
         db.collection("vehicles")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Vehicle vehicle = document.toObject(Vehicle.class);
-                                vehicle.setId(document.getId());
-                                vehicles.add(vehicle);
+        .get()
+        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        Vehicle vehicle = document.toObject(Vehicle.class);
+                        vehicle.setId(document.getId());
+                        vehicles.add(vehicle);
 //                                    Log.d(TAG, document.getId() + " => " + document.getData());
-                            }
-                        } else {
-//                                Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-
-                        recyclerView.setAdapter(new VehicleRecyclerViewAdapter(vehicles, getActivity()));
                     }
-                });
+                } else {
+//                                Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+
+                recyclerView.setAdapter(new VehicleRecyclerViewAdapter(vehicles, getActivity()));
+            }
+        });
 
         return view;
     }

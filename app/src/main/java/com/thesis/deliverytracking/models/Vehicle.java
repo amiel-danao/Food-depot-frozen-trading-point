@@ -27,6 +27,25 @@ public class Vehicle implements Parcelable {
         this.gas = gas;
     }
 
+    protected Vehicle(Parcel in) {
+        id = in.readString();
+        plateNumber = in.readString();
+        vehicleType = in.readString();
+        gas = in.readFloat();
+    }
+
+    public static final Creator<Vehicle> CREATOR = new Creator<Vehicle>() {
+        @Override
+        public Vehicle createFromParcel(Parcel in) {
+            return new Vehicle(in);
+        }
+
+        @Override
+        public Vehicle[] newArray(int size) {
+            return new Vehicle[size];
+        }
+    };
+
     @Override
     public String toString() {
         return plateNumber;
@@ -43,6 +62,9 @@ public class Vehicle implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
-
+        parcel.writeString(id);
+        parcel.writeString(plateNumber);
+        parcel.writeString(vehicleType);
+        parcel.writeFloat(gas);
     }
 }

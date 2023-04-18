@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_person"
+        android:title="Home"/>
+    <item
         android:id="@+id/nav_drivers"
         android:icon="@drawable/ic_person"
-        android:title="Manage Drivers"></item>
+        android:title="Manage Drivers"/>
     <item
         android:id="@+id/nav_vehicles"
         android:icon="@drawable/ic_person"
-        android:title="Manage Vehicles"></item>
+        android:title="Manage Vehicles"/>
     <item
         android:id="@+id/nav_logout"
         android:icon="@drawable/ic_settings"
-        android:title="Log out"></item>
+        android:title="Log out"/>
 </menu>

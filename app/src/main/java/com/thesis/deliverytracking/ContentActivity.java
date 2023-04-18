@@ -55,15 +55,20 @@ public class ContentActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.nav_home:
+                getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DeliveryFormFragment()).commit();
+                break;
             case R.id.nav_logout:
                 FirebaseAuth.getInstance().signOut();
+                break;
             case R.id.nav_drivers:
                 getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DriversFragment()).commit();
+                break;
             case R.id.nav_vehicles:
                 getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new VehiclesFragment()).commit();
-            default:
-                return super.onOptionsItemSelected(item);
+                break;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

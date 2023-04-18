@@ -79,28 +79,41 @@ public class AddVehicleFragment extends Fragment {
                 if (!plateValidation() | !vehicleTypeValidation()) {
                     return;
                 } else {
+
                     plateNumber = plateNumberInput.getEditText().getText().toString();
                     vehicleType = vehicleTypeInput.getEditText().getText().toString();
                     gas = Float.parseFloat(gasInput.getEditText().getText().toString());
 
-                    Map<String,Object> vehicleData = new HashMap<>();
-                    vehicleData.put("plateNumber", plateNumber);
-                    vehicleData.put("vehicleType", vehicleType);
-                    vehicleData.put("gas", gas);
-                    firebaseFirestore.collection("vehicles")
-                    .document(vehicleToEdit.id)
-                    .set(vehicleData)
+                    firebaseFirestore.collection("vehicles").whereEqualTo("plateNumber", plateNumber).get()
                     .addOnCompleteListener(task -> {
-                        if(!task.isSuccessful()){
-                            Log.d("Storing",task.getException().getMessage());
-                        }
-                        else{
-                            Toast.makeText(getContext(), "Vehicle was updated successfully" +
-                                    "", Toast.LENGTH_LONG).show();
+                        if (task.isSuccessful()) {
+                            if (!task.getResult().getDocuments().isEmpty()) {
+                                if(!task.getResult().getDocuments().get(0).getId().equals(vehicleToEdit.id)) {
+                                    Toast.makeText(getContext(), "Vehicle with the same plate number already exists!", Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+                            }
 
-                            getParentFragmentManager().popBackStackImmediate();
+                            Map<String,Object> vehicleData = new HashMap<>();
+                            vehicleData.put("plateNumber", plateNumber);
+                            vehicleData.put("vehicleType", vehicleType);
+                            vehicleData.put("gas", gas);
+                            firebaseFirestore.collection("vehicles")
+                            .document(vehicleToEdit.id)
+                            .set(vehicleData)
+                            .addOnCompleteListener(task2 -> {
+                                if(!task2.isSuccessful()){
+                                    Log.d("Storing",task2.getException().getMessage());
+                                }
+                                else{
+                                    Toast.makeText(getContext(), "Vehicle was updated successfully" +
+                                            "", Toast.LENGTH_LONG).show();
+
+                                    getParentFragmentManager().popBackStackImmediate();
+                                }
+                            }).addOnFailureListener(e -> Log.d("Storing",e.getMessage()));
                         }
-                    }).addOnFailureListener(e -> Log.d("Storing",e.getMessage()));
+                    });
                 }
             }
         }
@@ -120,44 +133,41 @@ public class AddVehicleFragment extends Fragment {
                     gas = Float.parseFloat(gasInput.getEditText().getText().toString());
 
                     firebaseFirestore.collection("vehicles").whereEqualTo("plateNumber", plateNumber).get()
-                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            if(task.isSuccessful()){
-                                if (!task.getResult().isEmpty()){
-                                    Toast.makeText(getContext(), "Vehicle with the same plate number already exists!", Toast.LENGTH_LONG).show();
-                                    return;
-                                }
-
-                                Map<String,Object> vehicleData = new HashMap<>();
-                                vehicleData.put("plateNumber", plateNumber);
-                                vehicleData.put("vehicleType", vehicleType);
-                                vehicleData.put("gas", gas);
-                                firebaseFirestore.collection("vehicles")
-                                        .add(vehicleData)
-                                        .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                if(!task.isSuccessful()){
-                                                    Log.d("Storing",task.getException().getMessage());
-                                                }
-                                                else{
-                                                    Toast.makeText(getContext(), "Vehicle was added successfully" +
-                                                            "", Toast.LENGTH_LONG).show();
-
-                                                    getParentFragmentManager().popBackStackImmediate();
-                                                }
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d("Storing",e.getMessage());
-                                            }
-                                        });
+                    .addOnCompleteListener(task -> {
+                        if(task.isSuccessful()){
+                            if (!task.getResult().isEmpty()){
+                                Toast.makeText(getContext(), "Vehicle with the same plate number already exists!", Toast.LENGTH_LONG).show();
+                                return;
                             }
-                            else{
-                                Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            }
+
+                            Map<String,Object> vehicleData = new HashMap<>();
+                            vehicleData.put("plateNumber", plateNumber);
+                            vehicleData.put("vehicleType", vehicleType);
+                            vehicleData.put("gas", gas);
+                            firebaseFirestore.collection("vehicles")
+                                    .add(vehicleData)
+                                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                                            if(!task.isSuccessful()){
+                                                Log.d("Storing",task.getException().getMessage());
+                                            }
+                                            else{
+                                                Toast.makeText(getContext(), "Vehicle was added successfully" +
+                                                        "", Toast.LENGTH_LONG).show();
+
+                                                getParentFragmentManager().popBackStackImmediate();
+                                            }
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d("Storing",e.getMessage());
+                                        }
+                                    });
+                        }
+                        else{
+                            Toast.makeText(getContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                 }

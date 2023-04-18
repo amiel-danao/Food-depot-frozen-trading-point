@@ -93,23 +93,23 @@ public class DriversFragment extends Fragment {
         List<UserInfo> users = new ArrayList<>();
 
         db.collection("users")
-                .whereEqualTo("role", "Delivery")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                users.add(document.toObject(UserInfo.class));
+        .whereEqualTo("role", "Delivery")
+        .get()
+        .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        users.add(document.toObject(UserInfo.class));
 //                                    Log.d(TAG, document.getId() + " => " + document.getData());
-                            }
-                        } else {
-//                                Log.d(TAG, "Error getting documents: ", task.getException());
-                        }
-
-                        recyclerView.setAdapter(new DriversRecyclerViewAdapter(users));
                     }
-                });
+                } else {
+//                                Log.d(TAG, "Error getting documents: ", task.getException());
+                }
+
+                recyclerView.setAdapter(new DriversRecyclerViewAdapter(users, getActivity()));
+            }
+        });
 
         return view;
     }

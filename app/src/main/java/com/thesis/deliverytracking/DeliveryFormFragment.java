@@ -59,7 +59,7 @@ public class DeliveryFormFragment extends Fragment {
             driverNames.add(val.username);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_spinner_item, driverNames);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         driverSpinner.setAdapter(adapter);

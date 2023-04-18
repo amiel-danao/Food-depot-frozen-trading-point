@@ -1,13 +1,18 @@
 package com.thesis.deliverytracking;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.thesis.deliverytracking.models.UserInfo;
 import com.thesis.deliverytracking.databinding.FragmentDriversBinding;
+import com.thesis.deliverytracking.models.Vehicle;
 
 import java.util.List;
 
@@ -18,9 +23,11 @@ import java.util.List;
 public class DriversRecyclerViewAdapter extends RecyclerView.Adapter<DriversRecyclerViewAdapter.ViewHolder> {
 
     private final List<UserInfo> mValues;
+    private final FragmentActivity activity;
 
-    public DriversRecyclerViewAdapter(List<UserInfo> items) {
+    public DriversRecyclerViewAdapter(List<UserInfo> items, FragmentActivity activity) {
         mValues = items;
+        this.activity = activity;
     }
 
     @Override
@@ -35,6 +42,18 @@ public class DriversRecyclerViewAdapter extends RecyclerView.Adapter<DriversRecy
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).id);
         holder.mContentView.setText(mValues.get(position).username);
+        holder.parent.setTag(holder.mItem);
+        holder.parent.setOnClickListener(view -> {
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("id", ((UserInfo)view.getTag()));
+            RegisterFragment fragment = new RegisterFragment();
+            fragment.setArguments(bundle);
+            transaction.replace(R.id.body_container, fragment, "driverList");
+            transaction.addToBackStack("driverList");
+            transaction.commit();
+        });
     }
 
     @Override
@@ -45,12 +64,14 @@ public class DriversRecyclerViewAdapter extends RecyclerView.Adapter<DriversRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView mIdView;
         public final TextView mContentView;
+        public final View parent;
         public UserInfo mItem;
 
         public ViewHolder(FragmentDriversBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;
+            parent = binding.parent;
         }
 
         @Override

@@ -11,6 +11,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.thesis.deliverytracking.models.UserInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class RegisterFragment extends Fragment {
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
     String UserID, UserEmail, UserUsername, UserRole, UserPassword;
+    UserInfo userToEdit;
 
     @Override
     public ViewGroup onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,6 +66,8 @@ public class RegisterFragment extends Fragment {
             }
         });
 
+        userToEdit = getArguments().getParcelable("id");
+
         Email = view.findViewById(R.id.txtvehicleplate);
         Username = view.findViewById(R.id.txtvehicletype);
         Role = view.findViewById(R.id.txtrole);
@@ -70,92 +75,104 @@ public class RegisterFragment extends Fragment {
         confirmPasswordInput = view.findViewById(R.id.txtConfirmPassword);
         btnRegister = view.findViewById(R.id.btn_add_vehicle);
 
+        if(userToEdit != null){
+            Email.getEditText().setText(userToEdit.email);
+            Email.setEnabled(false);
+            Username.getEditText().setText(userToEdit.username);
+            Role.getEditText().setText(userToEdit.role);
+            Password.setVisibility(View.GONE);
+            confirmPasswordInput.setVisibility(View.GONE);
+        }
+
         firebaseAuth = FirebaseAuth.getInstance();
 
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isNetworkAvailable(getContext())) {
-                    showToast(R.drawable.ic_network_check, "Please verify your network.");
-                } else {
-                    if (!emailValidation() | !usernameValidation() | !roleValidation() | !passwordValidation()) {
-                        return;
-                    } else {
-                        UserEmail = Email.getEditText().getText().toString();
-                        UserUsername = Username.getEditText().getText().toString();
-                        UserRole = selectedRole;
-                        UserPassword = Password.getEditText().getText().toString();
-                        String confirmPassword = confirmPasswordInput.getEditText().getText().toString();
-
-                        if (UserPassword.isEmpty() || confirmPassword.isEmpty()) {
-//                            showToast(R.drawable.ic_lock,"blank password is not allowed!");
-                            Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-
-                        if (!UserPassword.equals(confirmPassword)) {
-                            Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
-//                            showToast(R.drawable.ic_lock,"Password does not match!");
-                            return;
-                        }
-
-                        firebaseAuth.createUserWithEmailAndPassword(UserEmail, UserPassword)
-                                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (task.isSuccessful()) {
-                                            firebaseFirestore = FirebaseFirestore.getInstance();
-                                            UserID = firebaseAuth.getCurrentUser().getUid();
-                                            Map<String,Object> UserData = new HashMap<>();
-                                            UserData.put("username", UserUsername);
-                                            UserData.put("role", "Delivery");
-                                            firebaseFirestore.collection("users")
-                                                    .document(UserID)
-                                                    .set(UserData)
-                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if(!task.isSuccessful()){
-                                                                Log.d("Storing",task.getException().getMessage());
-                                                            }
-                                                        }
-                                                    }).addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.d("Storing",e.getMessage());
-                                                }
-                                            });
-
-                                            firebaseAuth.getCurrentUser().sendEmailVerification()
-                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<Void> task) {
-                                                            if (task.isSuccessful()) {
-                                                                showToast(R.drawable.ic_info, "User is registered successfully.\nPlease check your inbox for verification email.");
-                                                                getActivity().getSupportFragmentManager().popBackStack();
-                                                            }
-                                                        }
-                                                    }).addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Log.d("Registration", task.getException().getMessage());
-                                                }
-                                            });
-                                        }
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Email.setError(e.getMessage());
-                            }
-                        });
-                    }
-                }
-            }
-        });
+        btnRegister.setOnClickListener(addUserClickListener);
 
         return view;
     }
+
+    private View.OnClickListener addUserClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (!isNetworkAvailable(getContext())) {
+                showToast(R.drawable.ic_network_check, "Please verify your network.");
+            } else {
+                if (!emailValidation() | !usernameValidation() | !roleValidation() | !passwordValidation()) {
+                    return;
+                } else {
+                    UserEmail = Email.getEditText().getText().toString();
+                    UserUsername = Username.getEditText().getText().toString();
+                    UserRole = selectedRole;
+                    UserPassword = Password.getEditText().getText().toString();
+                    String confirmPassword = confirmPasswordInput.getEditText().getText().toString();
+
+                    if (UserPassword.isEmpty() || confirmPassword.isEmpty()) {
+//                            showToast(R.drawable.ic_lock,"blank password is not allowed!");
+                        Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (!UserPassword.equals(confirmPassword)) {
+                        Toast.makeText(getContext(), "Password does not match!", Toast.LENGTH_LONG).show();
+//                            showToast(R.drawable.ic_lock,"Password does not match!");
+                        return;
+                    }
+
+                    firebaseAuth.createUserWithEmailAndPassword(UserEmail, UserPassword)
+                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                firebaseFirestore = FirebaseFirestore.getInstance();
+                                UserID = firebaseAuth.getCurrentUser().getUid();
+                                Map<String,Object> UserData = new HashMap<>();
+                                UserData.put("email", UserEmail);
+                                UserData.put("username", UserUsername);
+                                UserData.put("role", "Delivery");
+                                firebaseFirestore.collection("users")
+                                        .document(UserID)
+                                        .set(UserData)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if(!task.isSuccessful()){
+                                                    Log.d("Storing",task.getException().getMessage());
+                                                }
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.d("Storing",e.getMessage());
+                                            }
+                                        });
+
+                                firebaseAuth.getCurrentUser().sendEmailVerification()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    showToast(R.drawable.ic_info, "User is registered successfully.\nPlease check your inbox for verification email.");
+                                                    getActivity().getSupportFragmentManager().popBackStack();
+                                                }
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.d("Registration", task.getException().getMessage());
+                                            }
+                                        });
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Email.setError(e.getMessage());
+                        }
+                    });
+                }
+            }
+        }
+    };
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

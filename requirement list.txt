@@ -1,0 +1,29 @@
+15k
+
+mobile app:android only, Java android studio
+deadline : May
+CAVSU
+
+
+Admin user
+
+view delivery history
+Tracking of food delivery
+
+driver account manage
+
+select delivery options:
+	no. driver
+	driver vehicle
+	location (using map pin)
+	SUV auto estimate, gas consumption(set base gas price/km)
+	proceed delivery  ->  track page
+
+
+
+driver:
+	account will be given by admin
+	view assigned delivery history
+	view assigned deliveries -> can view direction of delivery
+	fill up report after delivery
+	upload proof picture(Timestamp camera basic)

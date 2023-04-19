@@ -15,23 +15,41 @@ public class Vehicle implements Parcelable {
     public String id;
     public String plateNumber;
     public String vehicleType;
+    public String status = "available";
     public float gas;
 
     public Vehicle() {
     }
 
-    public Vehicle(String id, String name, String type, float gas) {
+    public Vehicle(String id, String plateNumber, String vehicleType, String status, float gas) {
         this.id = id;
-        this.plateNumber = name;
-        this.vehicleType = type;
+        this.plateNumber = plateNumber;
+        this.vehicleType = vehicleType;
+        this.status = status;
         this.gas = gas;
     }
+
 
     protected Vehicle(Parcel in) {
         id = in.readString();
         plateNumber = in.readString();
         vehicleType = in.readString();
+        status = in.readString();
         gas = in.readFloat();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(plateNumber);
+        dest.writeString(vehicleType);
+        dest.writeString(status);
+        dest.writeFloat(gas);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     public static final Creator<Vehicle> CREATOR = new Creator<Vehicle>() {
@@ -46,25 +64,7 @@ public class Vehicle implements Parcelable {
         }
     };
 
-    @Override
-    public String toString() {
-        return plateNumber;
-    }
-
-    public void setId(String id){
+    public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(id);
-        parcel.writeString(plateNumber);
-        parcel.writeString(vehicleType);
-        parcel.writeFloat(gas);
     }
 }

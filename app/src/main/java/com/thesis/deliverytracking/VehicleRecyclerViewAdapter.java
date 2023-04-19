@@ -31,7 +31,6 @@ public class VehicleRecyclerViewAdapter extends RecyclerView.Adapter<VehicleRecy
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         return new ViewHolder(FragmentVehicleBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-
     }
 
     @Override

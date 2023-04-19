@@ -13,6 +13,10 @@
         android:icon="@drawable/ic_person"
         android:title="Manage Vehicles"/>
     <item
+        android:id="@+id/nav_locations"
+        android:icon="@drawable/ic_settings"
+        android:title="Manage Locations"/>
+    <item
         android:id="@+id/nav_logout"
         android:icon="@drawable/ic_settings"
         android:title="Log out"/>

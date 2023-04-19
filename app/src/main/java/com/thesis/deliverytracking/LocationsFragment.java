@@ -23,8 +23,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.thesis.deliverytracking.models.UserInfo;
+import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.Vehicle;
+import com.thesis.deliverytracking.placeholder.PlaceholderContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * A fragment representing a list of Items.
  */
-public class VehiclesFragment extends Fragment {
+public class LocationsFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -44,13 +45,13 @@ public class VehiclesFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public VehiclesFragment() {
+    public LocationsFragment() {
     }
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static VehiclesFragment newInstance(int columnCount) {
-        VehiclesFragment fragment = new VehiclesFragment();
+    public static LocationsFragment newInstance(int columnCount) {
+        LocationsFragment fragment = new LocationsFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -69,10 +70,10 @@ public class VehiclesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_vehicle_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_locations_list, container, false);
 
-        FloatingActionButton fabAddDriver = view.findViewById(R.id.fabAddDriver);
-        fabAddDriver.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton Location = view.findViewById(R.id.fabAddLocation);
+        Location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                getActivity().getSupportFragmentManager().beginTransaction()
@@ -81,14 +82,14 @@ public class VehiclesFragment extends Fragment {
 //                .commit();
 
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.body_container, new AddVehicleFragment(), "vehicleList");
-                transaction.addToBackStack("vehicleList");
+                transaction.replace(R.id.body_container, new AddLocationFragment(), "locationList");
+                transaction.addToBackStack("locationList");
                 transaction.commit();
 //                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new AddVehicleFragment()).commit();
             }
         });
 
-        recyclerView = view.findViewById(R.id.vehicle_list);
+        recyclerView = view.findViewById(R.id.location_list);
         Context context = view.getContext();
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -97,25 +98,25 @@ public class VehiclesFragment extends Fragment {
         }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        List<Vehicle> vehicles = new ArrayList<>();
+        List<Location> locations = new ArrayList<>();
 
-        db.collection("vehicles")
+        db.collection("locations")
         .get()
         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        Vehicle vehicle = document.toObject(Vehicle.class);
-                        vehicle.setId(document.getId());
-                        vehicles.add(vehicle);
+                        Location location = document.toObject(Location.class);
+                        location.setId(document.getId());
+                        locations.add(location);
 //                                    Log.d(TAG, document.getId() + " => " + document.getData());
                     }
                 } else {
 //                                Log.d(TAG, "Error getting documents: ", task.getException());
                 }
 
-                recyclerView.setAdapter(new VehicleRecyclerViewAdapter(vehicles, getActivity()));
+                recyclerView.setAdapter(new LocationRecyclerViewAdapter(locations, getActivity()));
             }
         });
 
@@ -127,6 +128,6 @@ public class VehiclesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("Manage Vehicles");
+        toolbar.setTitle("Manage Locations");
     }
 }

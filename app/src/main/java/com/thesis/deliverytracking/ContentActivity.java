@@ -67,6 +67,9 @@ public class ContentActivity extends AppCompatActivity {
             case R.id.nav_vehicles:
                 getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new VehiclesFragment()).commit();
                 break;
+            case R.id.nav_locations:
+                getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new LocationsFragment()).commit();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

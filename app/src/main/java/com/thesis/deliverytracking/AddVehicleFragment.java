@@ -26,7 +26,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.thesis.deliverytracking.models.Vehicle;
 
 import java.util.HashMap;
@@ -46,9 +45,11 @@ public class AddVehicleFragment extends Fragment {
                                   Bundle savedInstanceState) {
 
         ViewGroup view = (ViewGroup) inflater.inflate(R.layout.fragment_add_vehicle, container, false);
-        vehicleToEdit = getArguments().getParcelable("id");
+        if(getArguments() != null) {
+            vehicleToEdit = getArguments().getParcelable("id");
+        }
 
-        plateNumberInput = view.findViewById(R.id.txtvehicleplate);
+        plateNumberInput = view.findViewById(R.id.txtPlateNumber);
         vehicleTypeInput = view.findViewById(R.id.txtvehicletype);
         gasInput = view.findViewById(R.id.txtGas);
         btnAddVehicle = view.findViewById(R.id.btn_add_vehicle);
@@ -144,6 +145,7 @@ public class AddVehicleFragment extends Fragment {
                             vehicleData.put("plateNumber", plateNumber);
                             vehicleData.put("vehicleType", vehicleType);
                             vehicleData.put("gas", gas);
+                            vehicleData.put("status", "available");
                             firebaseFirestore.collection("vehicles")
                                     .add(vehicleData)
                                     .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {

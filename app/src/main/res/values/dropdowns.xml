@@ -2,7 +2,6 @@
 <resources>
 
     <string-array name="no_of_delivery">
-        <item>Select</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>

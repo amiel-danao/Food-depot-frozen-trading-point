@@ -11,7 +11,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -66,14 +65,16 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        userToEdit = getArguments().getParcelable("id");
+        if(getArguments() != null) {
+            userToEdit = getArguments().getParcelable("id");
+        }
 
-        Email = view.findViewById(R.id.txtvehicleplate);
-        Username = view.findViewById(R.id.txtvehicletype);
+        Email = view.findViewById(R.id.txtEmail);
+        Username = view.findViewById(R.id.txtUserName);
         Role = view.findViewById(R.id.txtrole);
         Password = view.findViewById(R.id.txtpassword);
         confirmPasswordInput = view.findViewById(R.id.txtConfirmPassword);
-        btnRegister = view.findViewById(R.id.btn_add_vehicle);
+        btnRegister = view.findViewById(R.id.btn_register);
 
         if(userToEdit != null){
             Email.getEditText().setText(userToEdit.email);

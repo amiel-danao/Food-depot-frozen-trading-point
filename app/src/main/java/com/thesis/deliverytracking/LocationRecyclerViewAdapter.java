@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.thesis.deliverytracking.models.Location;
-import com.thesis.deliverytracking.models.Vehicle;
-import com.thesis.deliverytracking.placeholder.PlaceholderContent.PlaceholderItem;
 import com.thesis.deliverytracking.databinding.FragmentLocationsBinding;
 
 import java.util.List;

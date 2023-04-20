@@ -24,8 +24,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.thesis.deliverytracking.models.Location;
-import com.thesis.deliverytracking.models.Vehicle;
-import com.thesis.deliverytracking.placeholder.PlaceholderContent;
 
 import java.util.ArrayList;
 import java.util.List;

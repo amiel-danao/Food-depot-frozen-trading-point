@@ -55,6 +55,9 @@ public class ContentActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.nav_deliveries:
+                getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DeliveryListFragment()).commit();
+                break;
             case R.id.nav_home:
                 getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DeliveryFormFragment()).commit();
                 break;

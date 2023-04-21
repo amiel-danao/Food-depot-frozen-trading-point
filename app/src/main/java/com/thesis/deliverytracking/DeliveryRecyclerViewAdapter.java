@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import com.thesis.deliverytracking.models.Delivery;
 import com.thesis.deliverytracking.databinding.FragmentDeliveryListBinding;
 import com.thesis.deliverytracking.models.Location;
+import com.thesis.deliverytracking.models.UserInfo;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -24,10 +26,12 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
     private final FragmentActivity activity;
     String pattern = "MM-dd-yyyy";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+    private UserInfo userData;
 
-    public DeliveryRecyclerViewAdapter(List<Delivery> items, FragmentActivity activity) {
+    public DeliveryRecyclerViewAdapter(List<Delivery> items, FragmentActivity activity, UserInfo userData) {
         mValues = items;
         this.activity = activity;
+        this.userData = userData;
     }
 
     @Override
@@ -52,6 +56,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
 
             Bundle bundle = new Bundle();
             bundle.putParcelable("id", ((Delivery)view.getTag()));
+            bundle.putParcelable("userData", userData);
             TrackDeliveryFragment fragment = new TrackDeliveryFragment();
             fragment.setArguments(bundle);
             transaction.replace(R.id.body_container, fragment, "trackLocation");

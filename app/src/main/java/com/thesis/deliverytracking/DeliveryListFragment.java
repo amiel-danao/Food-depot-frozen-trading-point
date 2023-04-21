@@ -19,9 +19,11 @@ import android.widget.TableLayout;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.thesis.deliverytracking.models.Delivery;
 import com.thesis.deliverytracking.models.Location;
+import com.thesis.deliverytracking.models.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,7 @@ public class DeliveryListFragment extends Fragment {
     private TabLayout tabLayout;
     DeliveryRecyclerViewAdapter adapter;
     private String filter = "Pending";
+    UserInfo userData;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -63,6 +66,7 @@ public class DeliveryListFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            userData = getArguments().getParcelable("userData");
         }
     }
 
@@ -92,17 +96,6 @@ public class DeliveryListFragment extends Fragment {
                 adapter.notifyDataSetChanged();
                 filter = tab.getText().toString();
                 getDeliveries();
-//                switch (tab.getText().toString()) {
-//                    case "Pending":
-//
-//                    break;
-//                    case "Ongoing":
-//
-//                    break;
-//                    case "Completed":
-//
-//                    break;
-//                }
             }
 
             @Override
@@ -124,9 +117,16 @@ public class DeliveryListFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         List<Delivery> deliveries = new ArrayList<>();
 
-        db.collection("deliveries")
-        .whereEqualTo("status", filter)
-        .get()
+        Query query = db.collection("deliveries")
+        .whereEqualTo("status", filter);
+
+        if(userData != null && userData.role.equals("Delivery")){
+            query = db.collection("deliveries")
+                    .whereEqualTo("status", filter)
+                    .whereEqualTo("driver", userData.username);
+        }
+
+        query.get()
         .addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 for (QueryDocumentSnapshot document : task.getResult()) {
@@ -138,7 +138,7 @@ public class DeliveryListFragment extends Fragment {
 //                                Log.d(TAG, "Error getting documents: ", task.getException());
             }
 
-            adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity());
+            adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);
             recyclerView.setAdapter(adapter);
         });
     }
@@ -148,6 +148,11 @@ public class DeliveryListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("Deliveries");
+        if(userData != null) {
+            toolbar.setTitle("Deliveries (" + userData.username + ")");
+        }
+        else{
+            toolbar.setTitle("Deliveries");
+        }
     }
 }

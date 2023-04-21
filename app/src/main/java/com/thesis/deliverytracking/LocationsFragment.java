@@ -74,16 +74,10 @@ public class LocationsFragment extends Fragment {
         Location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                getActivity().getSupportFragmentManager().beginTransaction()
-//                .add(new AddVehicleFragment(), "detail") // Add this transaction to the back stack (name is an optional name for this back stack state, or null).
-//                .addToBackStack(null)
-//                .commit();
-
                 FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.body_container, new AddLocationFragment(), "locationList");
                 transaction.addToBackStack("locationList");
                 transaction.commit();
-//                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new AddVehicleFragment()).commit();
             }
         });
 

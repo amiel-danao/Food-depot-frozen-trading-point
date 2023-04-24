@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -42,6 +44,8 @@ import com.directions.route.Route;
 import com.directions.route.RouteException;
 import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -63,6 +67,7 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.thesis.deliverytracking.models.Delivery;
@@ -76,6 +81,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -86,8 +93,9 @@ import droidninja.filepicker.FilePickerBuilder;
 import droidninja.filepicker.FilePickerConst;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallback, RoutingListener {
+public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallback, RoutingListener, LocationListener {
 
+    private static final String GOOGLE_MAP_KEY = "AIzaSyCOHULVKTJ1Ngz8NGIKv_IMXR4InhJv4O8";
     private GoogleMap map;
     ArrayList markerPoints = new ArrayList();
     private FirebaseFirestore firebaseFirestore;
@@ -108,6 +116,14 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     private Button btnUpload;
     private Uri filePath;
     private ImageView uploadPicture;
+    private ScheduledExecutorService scheduler;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LatLng defaultLocation = new LatLng(14.2999129, 120.9528338);
+    private SupportMapFragment mapFragment;
+    private Timer timer;
+    private Thread thread;
+    private Button btnRemoveImage;
+
 
     public TrackDeliveryFragment() {
         // Required empty public constructor
@@ -128,6 +144,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         uploadParent = view.findViewById(R.id.uploadParent);
         btnUpload = view.findViewById(R.id.btnUpload);
         uploadPicture = view.findViewById(R.id.uploadPicture);
+        btnRemoveImage = view.findViewById(R.id.btnRemoveImage);
 
         if (getArguments() != null) {
             deliveryToView = getArguments().getParcelable("id");
@@ -136,63 +153,107 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
 
         //automatically set the delivery status to ongoing
-        if(userData != null && userData.role.equals("Delivery")) {
-            updateDriverActionButton();
-            if (deliveryToView != null && deliveryToView.status.equals("Pending")) {
-                setDeliveryStatus("Ongoing");
+        if (userData != null) {
+            if(userData.role.equals("Delivery")) {
+                updateDriverActionButton();
+                btnRemoveImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        filePath = null;
+                        Glide.with(getContext()).clear(uploadPicture);
+                    }
+                });
+                if (deliveryToView != null && deliveryToView.status.equals("Pending")) {
+                    setDeliveryStatus("Ongoing");
+                }
+            }
+            else if(userData.role.equals("Admin")){
+                if(deliveryToView.status.equals("For Approval")) {
+                    uploadParent.setVisibility(View.VISIBLE);
+                    btnRemoveImage.setVisibility(View.GONE);
+                    btnUpload.setVisibility(View.GONE);
+                    btnDriverAction.setVisibility(View.VISIBLE);
+                    btnDriverAction.setText("Approve this delivery");
+                    btnDriverAction.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            setDeliveryStatus("Completed");
+                        }
+                    });
+                    fetchDeliveryUploadedPhoto();
+                }
             }
         }
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
+        mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            locationPermissionRequest.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+            mapFragment.getMapAsync(this);
+        }
 
         distanceTxtView = view.findViewById(R.id.txtDistance);
         txtCurrentLocation = view.findViewById(R.id.txtCurrentLocation);
         txtDestination = view.findViewById(R.id.txtDestination);
 
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionLauncher.launch(new String[]{
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-            });
-        }
-
         return view;
+    }
+
+    private void fetchDeliveryUploadedPhoto() {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(deliveryToView.id);
+
+        storageRef.child("proof.jpg").getDownloadUrl().addOnSuccessListener(uri -> {
+            // Got the download URL for 'users/me/profile.png'
+            Glide.with(getContext()).load(uri).into(uploadPicture);
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
     }
 
     private void updateDriverActionButton() {
         btnDriverAction.setVisibility(View.VISIBLE);
-        if(deliveryToView.status.equals("Ongoing")) {
+        if (deliveryToView.status.equals("Ongoing")) {
             btnDriverAction.setOnClickListener(successDeliveryClickListener);
             btnUpload.setOnClickListener(uploadClickListener);
 
-        }
-        else if(deliveryToView.status.equals("For Approval")){
+        } else if (deliveryToView.status.equals("For Approval")) {
+            uploadParent.setVisibility(View.GONE);
             btnDriverAction.setEnabled(false);
             btnDriverAction.setText("Waiting for approval");
+        }
+        else if (deliveryToView.status.equals("Completed")){
+            uploadParent.setVisibility(View.GONE);
+            btnDriverAction.setEnabled(false);
+            btnDriverAction.setText("This delivery was completed");
         }
     }
 
     private View.OnClickListener uploadClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if(filePath == null){
+            if (filePath == null) {
                 String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
 
-                if(EasyPermissions.hasPermissions(getContext(), permissions)){
+                if (EasyPermissions.hasPermissions(getContext(), permissions)) {
                     imagePicker();
-                }
-                else{
+                } else {
                     EasyPermissions.requestPermissions(getActivity(), "App need access to your camera and storage", 100, permissions);
                 }
-            }
-            else{
-                StorageReference riversRef = FirebaseStorage.getInstance().getReference().child(deliveryToView.id+ "/"+filePath.getLastPathSegment());
+            } else {
+                StorageReference riversRef = FirebaseStorage.getInstance().getReference().child(deliveryToView.id + "/proof.jpg" );
                 UploadTask uploadTask = riversRef.putFile(filePath);
 
 // Register observers to listen for when the download is done or if it fails
@@ -213,47 +274,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         }
     };
 
-//    private ActivityResultLauncher<String[]> requestPermissionLauncher = registerForActivityResult(
-//            new ActivityResultContracts.RequestMultiplePermissions(), result ->  {
-//                for (String key :
-//                        result.keySet()) {
-//                    if(!Boolean.TRUE.equals(result.get(key))){
-//                        Toast.makeText(getContext(), "Permission for : " + key + " was not granted", Toast.LENGTH_LONG).show();
-//                        break;
-//                    }
-//                }
-//            }
-//    );
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if(resultCode == RESULT_OK && data != null){
-//            if(requestCode == FilePickerConst.REQUEST_CODE_PHOTO){
-//
-//                ArrayList<Uri> file = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
-//
-//                if(!file.isEmpty()) {
-//                    filePath = file.get(0);
-//                    Glide.with(getContext()).load(filePath).into(uploadPicture);
-//                }
-//            }
-//        }
-//    }
-
-
     private void imagePicker() {
-//        FilePickerBuilder.getInstance()
-//                .setActivityTitle("Select image")
-//                .setMaxCount(1)
-//                .pickPhoto(getActivity());
         Intent i = new Intent();
         i.setType("image/*");
         i.setAction(Intent.ACTION_GET_CONTENT);
@@ -287,18 +308,24 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         }
     };
 
-    private void setDeliveryStatus(String status){
+    private void setDeliveryStatus(String status) {
         Map<String, Object> data = new HashMap<>();
         data.put("status", status);
         firebaseFirestore.collection("deliveries").document(deliveryToView.id)
-        .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Toast.makeText(getContext(), "Delivery status was updated successfully : " + status, Toast.LENGTH_SHORT).show();
+                .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(getContext(), "Delivery status was updated successfully : " + status, Toast.LENGTH_SHORT).show();
 
-                deliveryToView.status = status;
-            }
-        });
+                        deliveryToView.status = status;
+                        if(status.equals("For Approval")){
+                            updateDriverActionButton();
+                        }
+                        else if(status.equals("Completed")){
+                            updateDriverActionButton();
+                        }
+                    }
+                });
     }
 
     private void getDestination() {
@@ -317,9 +344,10 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                         end = new LatLng(destination.position.getLatitude(), destination.position.getLongitude());
 
                         start = new LatLng(deliveryToView.currentLocation.getLatitude(), deliveryToView.currentLocation.getLongitude());
+
                         //mapView.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 14));
-                        findRoutes(start, end);
+//                        findRoutes(start, end);
                         attachLocationChangeListener();
                     }
                 } else {
@@ -368,78 +396,105 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
         getDestination();
 
-        if (userData != null && userData.role.equals("Delivery")) {
+
+        if (userData != null) {
             if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 Log.d("myLogTag", "Permission not granted");
                 return;
             }
+
             map.setMyLocationEnabled(true);
 
+            if (userData.role.equals("Delivery")) {
+                startTrackingLocation();
 
-            locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                timer = new Timer();
+                timer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(saveLocationRunnable, 0, 3, TimeUnit.SECONDS);
+                            txtPermissionWarning.setVisibility(View.VISIBLE);
+                            Log.d("myLogTag", "Permission not granted");
+                            return;
+                        }
+
+                        mFusedLocationClient.getLastLocation()
+                        .addOnSuccessListener(getActivity(), lastKnowLocationListener);
+
+//                        Log.d("myLogTag", "Started tracking");
+//                        android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                        if(location != null) {
+//                            GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+//
+//                            updateCurrentLocationInDB(geoPoint);
+//                        }
+//                        else{
+//                            Log.d("myLogTag", "Location is null");
+//                        }
+                    }
+                }, 0, 3000);
+            }
         }
     }
 
-    Runnable saveLocationRunnable = new Runnable() {
-        public void run() {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                Log.d("myLogTag", "Permission not granted");
-                return;
-            }
-            android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    OnSuccessListener<android.location.Location> lastKnowLocationListener = new OnSuccessListener<android.location.Location>() {
+        @Override
+        public void onSuccess(android.location.Location location) {
+            if (location != null) {
+                Log.d("myLogTag", "Location is ok");
+                //                        start = new LatLng(location.getLatitude(), location.getLongitude());
+                GeoPoint newLocation =new GeoPoint(location.getLatitude(), location.getLongitude());
+                if(deliveryToView.currentLocation.getLatitude() != newLocation.getLatitude()
+                || deliveryToView.currentLocation.getLongitude() != newLocation.getLongitude()) {
+                    updateCurrentLocationInDB(newLocation);
+                    // Set the map's camera position to the device's current location
 
-
-            Map<String, Object> data = new HashMap<>();
-            data.put("currentLocation", new GeoPoint(location.getLatitude(), location.getLatitude()));
-
-            firebaseFirestore.collection("deliveries").document(deliveryToView.id)
-            .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
-                        Log.d("myLogTag", "Current Location saved");
-                    }
-                    else{
-                        Log.d("myLogTag", task.getException().getMessage());
-                    }
                 }
-            });
+                else{
+                    Log.d("myLogTag", "Location is the same");
+                }
+            } else {
+                Log.d("myLogTag", "Location is null");
+                // If the device's last known location is not available, set the camera position to a default location
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 14f));
+            }
         }
     };
 
-    public void findRoutes(LatLng Start, LatLng End)
-    {
-        if(Start==null || End==null) {
-            Toast.makeText(getContext(),"Unable to get location", Toast.LENGTH_LONG).show();
-        }
-        else
-        {
+    private void updateCurrentLocationInDB(GeoPoint geoPoint) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("currentLocation", geoPoint);
+
+        firebaseFirestore.collection("deliveries").document(deliveryToView.id)
+        .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d("myLogTag", "Current Location saved");
+                    deliveryToView.currentLocation = geoPoint;
+                    start = new LatLng(deliveryToView.currentLocation.getLatitude(), deliveryToView.currentLocation.getLongitude());
+                    findRoutes(start, end);
+                } else {
+                    Log.d("myLogTag", task.getException().getMessage());
+                }
+            }
+        });
+    }
+
+    public void findRoutes(LatLng Start, LatLng End) {
+        if (Start == null || End == null) {
+            Toast.makeText(getContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
+        } else {
             Routing routing = new Routing.Builder()
                     .travelMode(AbstractRouting.TravelMode.DRIVING)
                     .withListener(this)
                     .alternativeRoutes(true)
                     .waypoints(Start, End)
                     //.key("AIzaSyD4uStbluZBnwKADWRtCPalZoddDXdNQbs")  //also define your api key here.
-                    .key(getContext().getString(R.string.google_maps_key))
+                    .key(GOOGLE_MAP_KEY)
                     .build();
             routing.execute();
         }
@@ -457,7 +512,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
     @Override
     public void onRoutingStart() {
-        Toast.makeText(getContext(),"Finding Route...",Toast.LENGTH_LONG).show();
+//        Toast.makeText(getContext(), "Finding Route...", Toast.LENGTH_SHORT).show();
     }
 
     //If Route finding success..
@@ -466,31 +521,29 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
         map.clear();
 
-        if(polyLines !=null) {
+        if (polyLines != null) {
             polyLines.clear();
         }
         PolylineOptions polyOptions = new PolylineOptions();
-        LatLng polylineStartLatLng=null;
-        LatLng polylineEndLatLng=null;
+        LatLng polylineStartLatLng = null;
+        LatLng polylineEndLatLng = null;
 
 
         polyLines = new ArrayList<>();
         //add route(s) to the map using polyline
-        for (int i = 0; i <route.size(); i++) {
+        for (int i = 0; i < route.size(); i++) {
 
-            if(i==shortestRouteIndex)
-            {
+            if (i == shortestRouteIndex) {
                 polyOptions.color(getResources().getColor(R.color.purple_500));
                 polyOptions.width(7);
                 polyOptions.addAll(route.get(shortestRouteIndex).getPoints());
                 Polyline polyline = map.addPolyline(polyOptions);
-                polylineStartLatLng=polyline.getPoints().get(0);
-                int k=polyline.getPoints().size();
-                polylineEndLatLng=polyline.getPoints().get(k-1);
+                polylineStartLatLng = polyline.getPoints().get(0);
+                int k = polyline.getPoints().size();
+                polylineEndLatLng = polyline.getPoints().get(k - 1);
                 polyLines.add(polyline);
 
-            }
-            else {
+            } else {
 
             }
 
@@ -511,7 +564,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
         txtDestination.setText("Destination: " + getCity(eMarker));
 
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 14));
+//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 14));
         float[] results = new float[1];
         android.location.Location.distanceBetween(start.latitude, start.longitude, end.latitude, end.longitude, results);
 
@@ -526,13 +579,13 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
     @Override
     public void onRoutingCancelled() {
-        findRoutes(start,end);
+        findRoutes(start, end);
     }
 
-    private String getCity(Marker marker){
+    private String getCity(Marker marker) {
         List<Address> addresses = new ArrayList<>();
         try {
-            addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude,1);
+            addresses = geocoder.getFromLocation(marker.getPosition().latitude, marker.getPosition().longitude, 1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -545,20 +598,50 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         return "";
     }
 
+    private void startTrackingLocation() {
+        if (locationManager != null || deliveryToView.status.equals("Completed")) {
+            return;
+        }
 
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            txtPermissionWarning.setVisibility(View.VISIBLE);
+            Log.d("myLogTag", "Permission not granted");
+            return;
+        }
 
-    private ActivityResultLauncher<String[]> requestPermissionLauncher =
-        registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissions -> {
-            if (permissions.get(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                // Permission granted
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+    }
+
+    ActivityResultLauncher<String[]> locationPermissionRequest =
+    registerForActivityResult(new ActivityResultContracts
+                .RequestMultiplePermissions(), result -> {
+            Boolean fineLocationGranted = result.getOrDefault(
+                    Manifest.permission.ACCESS_FINE_LOCATION, false);
+            Boolean coarseLocationGranted = result.getOrDefault(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,false);
+            if (fineLocationGranted != null && fineLocationGranted) {
+                // Precise location access granted.
                 txtPermissionWarning.setVisibility(View.GONE);
                 Log.d("myLogTag", "Permission was granted");
+
+                mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+                mapFragment.getMapAsync(this);
+
+                startTrackingLocation();
+
+            } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                // Only approximate location access granted.
+                txtPermissionWarning.setVisibility(View.VISIBLE);
+                Log.d("myLogTag", "Permission was denied");
             } else {
-                // Permission denied
+                // No location access granted.
                 txtPermissionWarning.setVisibility(View.VISIBLE);
                 Log.d("myLogTag", "Permission was denied");
             }
-        });
+        }
+    );
 
 
     @Override
@@ -567,7 +650,23 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         toolbar.setTitle("Track delivery");
-
     }
 
+    @Override
+    public void onLocationChanged(@NonNull android.location.Location location) {
+        Log.d("myLogTag", "Location changed!");
+        GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+        updateCurrentLocationInDB(geoPoint);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(timer != null){
+            timer.cancel();
+        }
+        if(scheduler != null){
+            scheduler.shutdown(); // Stop the scheduler when the activity is destroyed
+        }
+    }
 }

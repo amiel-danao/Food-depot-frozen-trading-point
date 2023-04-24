@@ -23,8 +23,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.ActionCodeSettings;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.auth.User;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +69,12 @@ public class LoginFragment extends Fragment {
                                                 startActivity(new Intent(getContext(), ContentActivity.class));
                                                 ActivityCompat.finishAffinity(getActivity());
                                             } else {
-                                                showToast(R.drawable.ic_mail, "Please verify your email address.");
+                                                firebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        showToast(R.drawable.ic_mail, "An email verification was sent. Please check your inbox/spam");
+                                                    }
+                                                });
                                             }
                                         }
                                     }

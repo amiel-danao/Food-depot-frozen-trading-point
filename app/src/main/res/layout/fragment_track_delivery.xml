@@ -36,10 +36,17 @@
         <LinearLayout
             android:id="@+id/uploadParent"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnRemoveImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/orange_2"
+                app:icon="@drawable/cast_ic_notification_disconnect" />
 
             <ImageView
                 android:id="@+id/uploadPicture"
@@ -67,7 +74,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView

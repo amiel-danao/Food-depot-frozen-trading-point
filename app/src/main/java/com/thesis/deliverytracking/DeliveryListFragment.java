@@ -148,11 +148,12 @@ public class DeliveryListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        if(userData != null) {
-            toolbar.setTitle("Deliveries (" + userData.username + ")");
-        }
-        else{
-            toolbar.setTitle("Deliveries");
+        if(toolbar != null) {
+            if (userData != null) {
+                toolbar.setTitle("Deliveries (" + userData.username + ")");
+            } else {
+                toolbar.setTitle("Deliveries");
+            }
         }
     }
 }

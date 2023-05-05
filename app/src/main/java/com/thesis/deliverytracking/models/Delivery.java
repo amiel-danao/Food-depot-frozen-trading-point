@@ -25,11 +25,12 @@ public class Delivery implements Parcelable {
     public GeoPoint destination;
     public String status;
     public Date creationDate;
+    public float gasConsumption;
 
     public Delivery() {
     }
 
-    public Delivery(String id, int number, String driver, String vehicle, String location, GeoPoint currentLocation, GeoPoint destination, String status, Date creationDate) {
+    public Delivery(String id, int number, String driver, String vehicle, String location, GeoPoint currentLocation, GeoPoint destination, String status, Date creationDate, float gasConsumption) {
         this.id = id;
         this.number = number;
         this.driver = driver;
@@ -39,6 +40,7 @@ public class Delivery implements Parcelable {
         this.destination = destination;
         this.status = status;
         this.creationDate = creationDate;
+        this.gasConsumption = gasConsumption;
     }
 
     protected Delivery(Parcel in) {
@@ -48,6 +50,7 @@ public class Delivery implements Parcelable {
         vehicle = in.readString();
         location = in.readString();
         status = in.readString();
+        gasConsumption = in.readFloat();
     }
 
     @Override
@@ -58,6 +61,7 @@ public class Delivery implements Parcelable {
         dest.writeString(vehicle);
         dest.writeString(location);
         dest.writeString(status);
+        dest.writeFloat(gasConsumption);
     }
 
     @Override

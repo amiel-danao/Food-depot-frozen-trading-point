@@ -38,7 +38,6 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         return new ViewHolder(FragmentDeliveryListBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-
     }
 
     @Override
@@ -50,6 +49,13 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
         holder.mDeliveryDriver.setText("Driver: " + mValues.get(position).driver);
         holder.mDeliveryVehicle.setText("Vehicle: " + mValues.get(position).vehicle);
         holder.mDeliveryLocation.setText("Location: " + mValues.get(position).location);
+        if(holder.mItem.status.equals("Pending") || holder.mItem.status.equals("Ongoing")){
+            holder.mGasConsumption.setVisibility(View.GONE);
+        }
+        else {
+            holder.mGasConsumption.setVisibility(View.VISIBLE);
+            holder.mGasConsumption.setText("Gas consumption: " + mValues.get(position).gasConsumption + "L");
+        }
         holder.parent.setTag(holder.mItem);
         holder.parent.setOnClickListener(view -> {
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
@@ -78,6 +84,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
         public final TextView mDeliveryDriver;
         public final TextView mDeliveryVehicle;
         public final TextView mDeliveryLocation;
+        public final TextView mGasConsumption;
         public Delivery mItem;
 
         public ViewHolder(FragmentDeliveryListBinding binding) {
@@ -89,6 +96,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
             mDeliveryDriver = binding.deliveryDriver;
             mDeliveryVehicle = binding.deliveryVehicle;
             mDeliveryLocation = binding.deliveryLocation;
+            mGasConsumption = binding.txtGasConsumption;
         }
 
         @Override

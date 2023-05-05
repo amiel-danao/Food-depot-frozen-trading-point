@@ -118,11 +118,13 @@ public class DeliveryFormFragment extends Fragment {
             vehicleNames.add(val.plateNumber);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, vehicleNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        vehicleSpinner.setAdapter(adapter);
-        getLocationList();
+        if(getActivity() != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_spinner_item, vehicleNames);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            vehicleSpinner.setAdapter(adapter);
+            getLocationList();
+        }
     }
 
     private void getLocationList() {

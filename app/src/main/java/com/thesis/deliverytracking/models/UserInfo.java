@@ -31,6 +31,19 @@ public class UserInfo implements Parcelable {
         role = in.readString();
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(email);
+        dest.writeString(username);
+        dest.writeString(role);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
     public static final Creator<UserInfo> CREATOR = new Creator<UserInfo>() {
         @Override
         public UserInfo createFromParcel(Parcel in) {
@@ -42,22 +55,4 @@ public class UserInfo implements Parcelable {
             return new UserInfo[size];
         }
     };
-
-    @Override
-    public String toString() {
-        return username;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(id);
-        parcel.writeString(email);
-        parcel.writeString(username);
-        parcel.writeString(role);
-    }
 }

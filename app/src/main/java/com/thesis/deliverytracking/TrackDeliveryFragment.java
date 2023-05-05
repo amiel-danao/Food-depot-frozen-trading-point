@@ -34,6 +34,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -123,6 +124,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     private Timer timer;
     private Thread thread;
     private Button btnRemoveImage;
+    private EditText editGasConsumed;
 
 
     public TrackDeliveryFragment() {
@@ -145,12 +147,12 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         btnUpload = view.findViewById(R.id.btnUpload);
         uploadPicture = view.findViewById(R.id.uploadPicture);
         btnRemoveImage = view.findViewById(R.id.btnRemoveImage);
+        editGasConsumed = view.findViewById(R.id.editGasConsumed);
 
         if (getArguments() != null) {
             deliveryToView = getArguments().getParcelable("id");
             userData = getArguments().getParcelable("userData");
         }
-
 
         //automatically set the delivery status to ongoing
         if (userData != null) {
@@ -167,12 +169,14 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                     setDeliveryStatus("Ongoing");
                 }
             }
-            else if(userData.role.equals("Admin")){
+            else if(userData.role.equals("admin")){
+                editGasConsumed.setEnabled(false);
                 if(deliveryToView.status.equals("For Approval")) {
                     uploadParent.setVisibility(View.VISIBLE);
                     btnRemoveImage.setVisibility(View.GONE);
                     btnUpload.setVisibility(View.GONE);
                     btnDriverAction.setVisibility(View.VISIBLE);
+                    editGasConsumed.setText("Gas consumed: " + String.valueOf(deliveryToView.gasConsumption) + "L");
                     btnDriverAction.setText("Approve this delivery");
                     btnDriverAction.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -253,26 +257,42 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                     EasyPermissions.requestPermissions(getActivity(), "App need access to your camera and storage", 100, permissions);
                 }
             } else {
-                StorageReference riversRef = FirebaseStorage.getInstance().getReference().child(deliveryToView.id + "/proof.jpg" );
-                UploadTask uploadTask = riversRef.putFile(filePath);
+                if(isGasConsumptionValid()) {
+
+                    StorageReference riversRef = FirebaseStorage.getInstance().getReference().child(deliveryToView.id + "/proof.jpg");
+                    UploadTask uploadTask = riversRef.putFile(filePath);
 
 // Register observers to listen for when the download is done or if it fails
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                        // ...
-                        setDeliveryStatus("For Approval");
-                    }
-                });
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                            Toast.makeText(getContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                            // ...
+                            setDeliveryStatus("For Approval");
+                        }
+                    });
+                }
+                else{
+                    Toast.makeText(getContext(), "Please enter a valid gas consumption", Toast.LENGTH_LONG).show();
+                }
             }
         }
     };
+
+    private boolean isGasConsumptionValid() {
+        String gas = editGasConsumed.getText().toString().trim();
+
+        if(gas.isEmpty() || Float.parseFloat(gas) <= 0){
+            return false;
+        }
+        return true;
+    }
 
     private void imagePicker() {
         Intent i = new Intent();
@@ -304,13 +324,16 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         public void onClick(View view) {
             uploadParent.setVisibility(View.VISIBLE);
             btnDriverAction.setVisibility(View.GONE);
-//
         }
     };
 
     private void setDeliveryStatus(String status) {
         Map<String, Object> data = new HashMap<>();
         data.put("status", status);
+        if(status.equals("For Approval")){
+            data.put("gasConsumption", Float.parseFloat(editGasConsumed.getText().toString()));
+        }
+
         firebaseFirestore.collection("deliveries").document(deliveryToView.id)
                 .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -318,10 +341,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                         Toast.makeText(getContext(), "Delivery status was updated successfully : " + status, Toast.LENGTH_SHORT).show();
 
                         deliveryToView.status = status;
-                        if(status.equals("For Approval")){
-                            updateDriverActionButton();
-                        }
-                        else if(status.equals("Completed")){
+                        if(status.equals("For Approval") || status.equals("Completed")){
                             updateDriverActionButton();
                         }
                     }
@@ -347,7 +367,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
                         //mapView.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 14));
-//                        findRoutes(start, end);
+                        findRoutes(start, end);
                         attachLocationChangeListener();
                     }
                 } else {
@@ -372,8 +392,6 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                 GeoPoint currentLocation = (GeoPoint) snapshot.get("currentLocation");
                 start = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
                 findRoutes(start, end);
-            } else {
-
             }
         });
     }
@@ -423,17 +441,6 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
                         mFusedLocationClient.getLastLocation()
                         .addOnSuccessListener(getActivity(), lastKnowLocationListener);
-
-//                        Log.d("myLogTag", "Started tracking");
-//                        android.location.Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//                        if(location != null) {
-//                            GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-//
-//                            updateCurrentLocationInDB(geoPoint);
-//                        }
-//                        else{
-//                            Log.d("myLogTag", "Location is null");
-//                        }
                     }
                 }, 0, 3000);
             }
@@ -446,7 +453,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
             if (location != null) {
                 Log.d("myLogTag", "Location is ok");
                 //                        start = new LatLng(location.getLatitude(), location.getLongitude());
-                GeoPoint newLocation =new GeoPoint(location.getLatitude(), location.getLongitude());
+                GeoPoint newLocation = new GeoPoint(location.getLatitude(), location.getLongitude());
                 if(deliveryToView.currentLocation.getLatitude() != newLocation.getLatitude()
                 || deliveryToView.currentLocation.getLongitude() != newLocation.getLongitude()) {
                     updateCurrentLocationInDB(newLocation);
@@ -504,10 +511,10 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     @Override
     public void onRoutingFailure(RouteException e) {
         View parentLayout = view.findViewById(android.R.id.content);
-        Toast.makeText(getContext(), e.toString(), Toast.LENGTH_LONG).show();
-//        Snackbar snackbar= Snackbar.make(parentLayout, e.toString(), Snackbar.LENGTH_LONG);
-//        snackbar.show();
-//        Findroutes(start,end);
+        Context context = getContext();
+        if(context != null) {
+            Toast.makeText(getContext(), e.toString(), Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.thesis.deliverytracking;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -44,23 +45,39 @@ public class ContentActivity extends AppCompatActivity {
             return;
         }
 
-        FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() == null){
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                }
+        FirebaseAuth.getInstance().addAuthStateListener(firebaseAuth -> {
+            if (firebaseAuth.getCurrentUser() == null){
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
 
         myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
+        FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
+        .get().addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                userData = task.getResult().toObject(UserInfo.class);
+                if (userData != null && userData.role.equals("admin")) {
+                    getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DeliveryFormFragment()).commit();
+                }
+                else{
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelable("userData", userData);
+                    DeliveryListFragment fragment = new DeliveryListFragment();
+                    fragment.setArguments(bundle);
+                    transaction.replace(R.id.body_container, fragment, "deliveryList");
+                    transaction.addToBackStack("deliveryList");
+                    transaction.commit();
+                }
+                invalidateOptionsMenu();
+            }
+        });
     }
 
-
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -96,34 +113,13 @@ public class ContentActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().getCurrentUser().getUid())
-        .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    userData = task.getResult().toObject(UserInfo.class);
-                    MenuInflater inflater = getMenuInflater();
-                    if (userData != null && userData.role.equals("admin")) {
-                        inflater.inflate(R.menu.item_menu, menu);
-                        getSupportFragmentManager().beginTransaction().replace(R.id.body_container, new DeliveryFormFragment()).commit();
-                    } else {
-                        inflater.inflate(R.menu.item_menu_driver, menu);
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-                        Bundle bundle = new Bundle();
-                        bundle.putParcelable("userData", userData);
-                        DeliveryListFragment fragment = new DeliveryListFragment();
-                        fragment.setArguments(bundle);
-                        transaction.replace(R.id.body_container, fragment, "deliveryList");
-                        transaction.addToBackStack("deliveryList");
-                        transaction.commit();
-                    }
-                }
-                else{
-
-                }
-            }
-        });
+        MenuInflater inflater = getMenuInflater();
+        if (userData != null && userData.role.equals("admin")) {
+            inflater.inflate(R.menu.item_menu, menu);
+        } else {
+            inflater.inflate(R.menu.item_menu_driver, menu);
+        }
 
         return true;
     }

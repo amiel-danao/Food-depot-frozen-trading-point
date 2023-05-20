@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/green_1"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:orientation="vertical">
 
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        android:layout_weight="0.45"
+        app:layout_constraintBottom_toTopOf="@+id/uploadParent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -21,104 +21,119 @@
     </fragment>
 
 
-    <LinearLayout
-        android:id="@+id/linearLayout2"
+    <ScrollView
+        android:id="@+id/uploadParent"
+        android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:layout_weight="0.4"
+        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-
         <LinearLayout
-            android:id="@+id/uploadParent"
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:background="@color/white"
             android:orientation="vertical"
-            android:visibility="gone">
 
-            <Button
-                android:id="@+id/btnRemoveImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/orange_2"
-                app:icon="@drawable/cast_ic_notification_disconnect" />
+            >
 
-            <ImageView
-                android:id="@+id/uploadPicture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:src="@mipmap/ic_launcher_round" />
 
-            <EditText
-                android:id="@+id/editGasConsumed"
+            <LinearLayout
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Gas Consumed (in Liters)"
-                android:inputType="numberDecimal" />
+                android:orientation="vertical"
+                >
 
-            <Button
-                android:id="@+id/btnUpload"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Upload" />
+                <Button
+                    android:id="@+id/btnRemoveImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/orange_2"
+                    app:icon="@drawable/cast_ic_notification_disconnect" />
 
-        </LinearLayout>
+                <ImageView
+                    android:id="@+id/uploadPicture"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:cropToPadding="true"
+                    android:scaleType="centerInside"
+                    tools:src="@mipmap/ic_launcher_round" />
 
-        <TextView
-            android:id="@+id/txtPermissionWarning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="NOTE: Location permission was previously not granted, the app will not be available to update the current location of your delivery. Please grant permission in the settings"
-            android:textColor="@color/orange_2"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:visibility="gone" />
+                <EditText
+                    android:id="@+id/editGasConsumed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="Gas Consumed (in Liters)"
+                    android:inputType="numberDecimal" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+                <Button
+                    android:id="@+id/btnUpload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upload" />
 
-            <TextView
-                android:id="@+id/txtDistance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtCurrentLocation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/txtDestination"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnDriverAction"
+                android:id="@+id/txtPermissionWarning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:layout_weight="1"
-                android:text="Delivery Successful"
+                android:text="NOTE: Location permission was previously not granted, the app will not be available to update the current location of your delivery. Please grant permission in the settings"
+                android:textColor="@color/orange_2"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:visibility="gone" />
 
         </LinearLayout>
+
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.15"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txtDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtCurrentLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtDestination"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnDriverAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:layout_weight="1"
+            android:text="Delivery Successful"
+            android:visibility="gone" />
+
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

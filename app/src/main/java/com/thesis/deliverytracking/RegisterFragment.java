@@ -242,7 +242,7 @@ public class RegisterFragment extends Fragment {
         View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) getView().findViewById(R.id.toast_root));
         Toast toast = new Toast(getContext());
         toast.setGravity(Gravity.TOP, 0, 0);
-        ((ImageView) layout.findViewById(R.id.toast_image)).setImageDrawable(getResources().getDrawable(icon));
+        ((ImageView) layout.findViewById(R.id.toast_image)).setImageDrawable(getActivity().getResources().getDrawable(icon));
         ((TextView) layout.findViewById(R.id.toast_text)).setText(text);
         toast.setDuration(Toast.LENGTH_LONG);
         toast.setView(layout);

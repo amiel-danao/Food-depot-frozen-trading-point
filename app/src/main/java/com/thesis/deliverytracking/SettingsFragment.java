@@ -129,7 +129,7 @@ public class SettingsFragment extends Fragment {
                 final AlertDialog.Builder resetPasswordDialog = new AlertDialog.Builder(view.getContext());
                 resetPasswordDialog.setTitle("Reset Password");
                 resetPasswordDialog.setView(txtresetPassword);
-                resetPasswordDialog.setPositiveButton(Html.fromHtml("<font color='"+getResources().getColor(R.color.green_2)+"'>Save</font>"), new DialogInterface.OnClickListener() {
+                resetPasswordDialog.setPositiveButton(Html.fromHtml("<font color='"+getActivity().getResources().getColor(R.color.green_2)+"'>Save</font>"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
                         if(passwordValidation()) {
@@ -148,7 +148,7 @@ public class SettingsFragment extends Fragment {
                         }
                     }
                 });
-                resetPasswordDialog.setNegativeButton(Html.fromHtml("<font color='"+getResources().getColor(R.color.orange_2)+"'>Cancel</font>"), new DialogInterface.OnClickListener() {
+                resetPasswordDialog.setNegativeButton(Html.fromHtml("<font color='"+getActivity().getResources().getColor(R.color.orange_2)+"'>Cancel</font>"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(final DialogInterface dialog, final int which) {
                         dialog.cancel();
@@ -198,7 +198,7 @@ public class SettingsFragment extends Fragment {
         View layout = inflater.inflate(R.layout.toast_layout, (ViewGroup) getView().findViewById(R.id.toast_root));
         Toast toast = new Toast(getContext());
         toast.setGravity(Gravity.TOP, 0, 0);
-        ((ImageView) layout.findViewById(R.id.toast_image)).setImageDrawable(getResources().getDrawable(icon));
+        ((ImageView) layout.findViewById(R.id.toast_image)).setImageDrawable(getActivity().getResources().getDrawable(icon));
         ((TextView) layout.findViewById(R.id.toast_text)).setText(text);
         toast.setDuration(Toast.LENGTH_LONG);
         toast.setView(layout);

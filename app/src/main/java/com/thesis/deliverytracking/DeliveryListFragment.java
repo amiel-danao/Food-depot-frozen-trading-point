@@ -42,6 +42,7 @@ public class DeliveryListFragment extends Fragment {
     DeliveryRecyclerViewAdapter adapter;
     private String filter = "Pending";
     UserInfo userData;
+    private int selectedTabIndex = 0;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -71,6 +72,14 @@ public class DeliveryListFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(tabLayout != null){
+            tabLayout.getTabAt(selectedTabIndex).select();
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_delivery_list_list, container, false);
@@ -95,6 +104,7 @@ public class DeliveryListFragment extends Fragment {
                 adapter.mValues.clear();
                 adapter.notifyDataSetChanged();
                 filter = tab.getText().toString();
+                selectedTabIndex = tab.getPosition();
                 getDeliveries();
             }
 
@@ -108,6 +118,8 @@ public class DeliveryListFragment extends Fragment {
 
             }
         });
+
+
 
         getDeliveries();
         return view;

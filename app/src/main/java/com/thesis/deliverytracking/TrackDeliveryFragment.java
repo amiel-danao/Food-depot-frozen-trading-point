@@ -125,6 +125,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     private Thread thread;
     private Button btnRemoveImage;
     private EditText editGasConsumed;
+    private Routing routing;
 
 
     public TrackDeliveryFragment() {
@@ -495,7 +496,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         if (Start == null || End == null) {
             Toast.makeText(getContext(), "Unable to get location", Toast.LENGTH_SHORT).show();
         } else {
-            Routing routing = new Routing.Builder()
+            routing = new Routing.Builder()
                     .travelMode(AbstractRouting.TravelMode.DRIVING)
                     .withListener(this)
                     .alternativeRoutes(true)
@@ -504,6 +505,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                     .key(GOOGLE_MAP_KEY)
                     .build();
             routing.execute();
+
         }
     }
 
@@ -513,7 +515,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         View parentLayout = view.findViewById(android.R.id.content);
         Context context = getContext();
         if(context != null) {
-            Toast.makeText(getContext(), e.toString(), Toast.LENGTH_LONG).show();
+//            Toast.makeText(getContext(), e.toString(), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -541,7 +543,10 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         for (int i = 0; i < route.size(); i++) {
 
             if (i == shortestRouteIndex) {
-                polyOptions.color(getResources().getColor(R.color.purple_500));
+                if(getActivity() == null){
+                    return;
+                }
+                polyOptions.color(getActivity().getResources().getColor(R.color.purple_500));
                 polyOptions.width(7);
                 polyOptions.addAll(route.get(shortestRouteIndex).getPoints());
                 Polyline polyline = map.addPolyline(polyOptions);
@@ -674,6 +679,14 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         }
         if(scheduler != null){
             scheduler.shutdown(); // Stop the scheduler when the activity is destroyed
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if(routing != null){
+            routing.cancel(true);
         }
     }
 }

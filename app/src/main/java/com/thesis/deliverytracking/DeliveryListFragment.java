@@ -1,5 +1,9 @@
 package com.thesis.deliverytracking;
 
+import static com.google.firebase.firestore.DocumentChange.Type.ADDED;
+import static com.google.firebase.firestore.DocumentChange.Type.MODIFIED;
+import static com.google.firebase.firestore.DocumentChange.Type.REMOVED;
+
 import android.content.Context;
 import android.os.Bundle;
 
@@ -18,9 +22,15 @@ import android.view.ViewGroup;
 import android.widget.TableLayout;
 
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.MetadataChanges;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.thesis.deliverytracking.models.Delivery;
 import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.UserInfo;
@@ -138,21 +148,73 @@ public class DeliveryListFragment extends Fragment {
                     .whereEqualTo("driver", userData.username);
         }
 
-        query.get()
-        .addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                for (QueryDocumentSnapshot document : task.getResult()) {
-                    Delivery delivery = document.toObject(Delivery.class);
-                    delivery.setId(document.getId());
-                    deliveries.add(delivery);
-                }
-            } else {
-//                                Log.d(TAG, "Error getting documents: ", task.getException());
+        adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);
+        recyclerView.setAdapter(adapter);
+
+        query.addSnapshotListener(MetadataChanges.EXCLUDE, (value, error) -> {
+            if (error != null) {
+                // Handle any errors
+                return;
             }
 
-            adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);
-            recyclerView.setAdapter(adapter);
+            for (DocumentChange change : value.getDocumentChanges()) {
+                DocumentSnapshot document = change.getDocument();
+
+                switch (change.getType()) {
+                    case ADDED:
+                        // Handle added document
+                        Delivery addedDelivery = document.toObject(Delivery.class);
+                        addedDelivery.setId(document.getId());
+
+                        if(!deliveries.contains(addedDelivery)) {
+                            deliveries.add(addedDelivery);
+                            adapter.notifyItemInserted(deliveries.size()); // Notify adapter of the new item
+                        }
+                        break;
+
+                    case MODIFIED:
+                        // Handle modified document
+                        Delivery modifiedDelivery = document.toObject(Delivery.class);
+                        modifiedDelivery.setId(document.getId());
+
+                        int existingModifiedItemIndex = deliveries.indexOf(modifiedDelivery);
+                        if(existingModifiedItemIndex > -1){
+                            deliveries.set(existingModifiedItemIndex, modifiedDelivery);
+                            adapter.notifyItemChanged(existingModifiedItemIndex);
+                        }
+                        break;
+
+                    case REMOVED:
+                        // Handle removed document
+                        String removedDeliveryId = document.getId();
+
+                        int existingDeletedItemIndex = deliveries.indexOf(removedDeliveryId);
+                        if(existingDeletedItemIndex > -1) {
+                            deliveries.remove(existingDeletedItemIndex);
+                            adapter.notifyItemRemoved(existingDeletedItemIndex); // Notify adapter of the removed item
+                        }
+
+                        break;
+                }
+            }
         });
+
+
+//        query.get()
+//        .addOnCompleteListener(task -> {
+//            if (task.isSuccessful()) {
+//                for (QueryDocumentSnapshot document : task.getResult()) {
+//                    Delivery delivery = document.toObject(Delivery.class);
+//                    delivery.setId(document.getId());
+//                    deliveries.add(delivery);
+//                }
+//            } else {
+////                                Log.d(TAG, "Error getting documents: ", task.getException());
+//            }
+//
+//            adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);
+//            recyclerView.setAdapter(adapter);
+//        });
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.thesis.deliverytracking;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,12 +10,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.collection.LongSparseArray;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +33,8 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.auth.User;
+import com.thesis.deliverytracking.adapters.CustomSpinnerAdapter;
+import com.thesis.deliverytracking.misc.CustomUnderlineSpan;
 import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.UserInfo;
 import com.thesis.deliverytracking.models.Vehicle;
@@ -64,9 +69,26 @@ public class DeliveryFormFragment extends Fragment {
         locationSpinner = view.findViewById(R.id.spn_location);
         btnProceed = view.findViewById(R.id.btn_proceed);
         firebaseFirestore = FirebaseFirestore.getInstance();
+
+        int color = ContextCompat.getColor(getContext(), R.color.orange_2);
+        CustomUnderlineSpan customUnderlineSpan = new CustomUnderlineSpan(color);
+
+        TextView driverLabel = view.findViewById(R.id.txt_driver);
+        SpannableString contentDriver = new SpannableString(driverLabel.getText());
+        contentDriver.setSpan(customUnderlineSpan, 0, contentDriver.length(), 0);
+        driverLabel.setText(contentDriver);
+
+        TextView vehicleLabel = view.findViewById(R.id.txt_vehicle);
+        SpannableString contentVehicle = new SpannableString(vehicleLabel.getText());
+        contentVehicle.setSpan(customUnderlineSpan, 0, contentVehicle.length(), 0);
+        vehicleLabel.setText(contentVehicle);
+
+        TextView locationLabel = view.findViewById(R.id.txt_location);
+        SpannableString contentLocation = new SpannableString(locationLabel.getText());
+        contentLocation.setSpan(customUnderlineSpan, 0, contentLocation.length(), 0);
+        locationLabel.setText(contentLocation);
+
         getDriverList();
-
-
 
         return view;
     }
@@ -80,9 +102,7 @@ public class DeliveryFormFragment extends Fragment {
             driverNames.add(val.username);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, driverNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(getContext(), R.layout.custom_spinner_dropdown_item, driverNames);
         driverSpinner.setAdapter(adapter);
         getVehicleList();
     }
@@ -119,9 +139,7 @@ public class DeliveryFormFragment extends Fragment {
         }
 
         if(getActivity() != null) {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                    android.R.layout.simple_spinner_item, vehicleNames);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(getContext(), R.layout.custom_spinner_dropdown_item, vehicleNames);
             vehicleSpinner.setAdapter(adapter);
             getLocationList();
         }
@@ -154,16 +172,14 @@ public class DeliveryFormFragment extends Fragment {
             locationNames.add(val.locationName);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, locationNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(getContext(), R.layout.custom_spinner_dropdown_item, locationNames);
         locationSpinner.setAdapter(adapter);
         btnProceed.setEnabled(true);
         btnProceed.setOnClickListener(proceedClickListener);
     }
 
 
-    private View.OnClickListener proceedClickListener = new View.OnClickListener() {
+    private final View.OnClickListener proceedClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
 
@@ -246,6 +262,6 @@ public class DeliveryFormFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("");
+        toolbar.setTitle("New Delivery");
     }
 }

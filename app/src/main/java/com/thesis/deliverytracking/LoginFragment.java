@@ -1,20 +1,24 @@
 package com.thesis.deliverytracking;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +41,33 @@ public class LoginFragment extends Fragment {
     Button btnLogin;
     FirebaseAuth firebaseAuth;
     String UserEmail, UserPassword;
+    private final View.OnClickListener forgotPasswordClickListener = view -> {
+        Context context = view.getContext();
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Input your email");
+        final EditText input = new EditText(context);
+        input.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        builder.setView(input);
+
+        builder.setPositiveButton("Reset Password", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String email = input.getText().toString().trim();
+                // Call the resetPassword method with the entered email
+                resetPassword(email);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    };
 
     @Override
     public ViewGroup onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,8 +77,10 @@ public class LoginFragment extends Fragment {
         Email = view.findViewById(R.id.txtemaillog);
         Password = view.findViewById(R.id.txtpasswordlog);
         btnLogin = view.findViewById(R.id.btnlogin);
+        TextView forgotPassword = view.findViewById(R.id.forgotPassword);
 
         firebaseAuth = FirebaseAuth.getInstance();
+
 
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -93,6 +126,8 @@ public class LoginFragment extends Fragment {
                 }
             }
         });
+
+        forgotPassword.setOnClickListener(forgotPasswordClickListener);
 
         return view;
     }
@@ -157,4 +192,21 @@ public class LoginFragment extends Fragment {
         }
         return false;
     }
+
+    private void resetPassword(String email) {
+        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+        .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(getContext(),
+                            "Password reset email sent", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getContext(),
+                            "Failed to send reset email", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
 }

@@ -43,18 +43,24 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText("Delivery ID: " +  mValues.get(position).id);
-        holder.mDeliveryCreationDate.setText("Creation Date: " + simpleDateFormat.format(mValues.get(position).creationDate));
-        holder.mDeliveryNo.setText("No. of Delivery: " +  mValues.get(position).number);
-        holder.mDeliveryDriver.setText("Driver: " + mValues.get(position).driver);
-        holder.mDeliveryVehicle.setText("Vehicle: " + mValues.get(position).vehicle);
-        holder.mDeliveryLocation.setText("Location: " + mValues.get(position).location);
+        String formattedIdValue = "N/A";
+        if(holder.mItem.primaryKey > -1){
+            formattedIdValue = String.format("%04d", holder.mItem.primaryKey);
+        }
+        holder.mIdView.setText("Delivery ID: " +  formattedIdValue);
+        if(holder.mItem.creationDate != null) {
+            holder.mDeliveryCreationDate.setText("Creation Date: " + simpleDateFormat.format(holder.mItem.creationDate));
+        }
+        holder.mDeliveryNo.setText("No. of Delivery: " +  holder.mItem.number);
+        holder.mDeliveryDriver.setText("Driver: " + holder.mItem.driver);
+        holder.mDeliveryVehicle.setText("Vehicle: " + holder.mItem.vehicle);
+        holder.mDeliveryLocation.setText("Location: " + holder.mItem.location);
         if(holder.mItem.status.equals("Pending") || holder.mItem.status.equals("Ongoing")){
             holder.mGasConsumption.setVisibility(View.GONE);
         }
         else {
             holder.mGasConsumption.setVisibility(View.VISIBLE);
-            holder.mGasConsumption.setText("Gas consumption: " + mValues.get(position).gasConsumption + "L");
+            holder.mGasConsumption.setText("Gas consumption: " + holder.mItem.gasConsumption + "L");
         }
         holder.parent.setTag(holder.mItem);
         holder.parent.setOnClickListener(view -> {

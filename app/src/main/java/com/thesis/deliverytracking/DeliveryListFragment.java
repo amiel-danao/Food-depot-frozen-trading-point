@@ -140,12 +140,14 @@ public class DeliveryListFragment extends Fragment {
         List<Delivery> deliveries = new ArrayList<>();
 
         Query query = db.collection("deliveries")
-        .whereEqualTo("status", filter);
+        .whereEqualTo("status", filter)
+        .orderBy("primaryKey", Query.Direction.DESCENDING);
 
         if(userData != null && userData.role.equals("Delivery")){
             query = db.collection("deliveries")
                     .whereEqualTo("status", filter)
-                    .whereEqualTo("driver", userData.username);
+                    .whereEqualTo("driver", userData.username)
+                    .orderBy("primaryKey", Query.Direction.DESCENDING);
         }
 
         adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);

@@ -93,5 +93,9 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="forgot_password">Forgot Password</string>
+    <string name="proceed_select">PROCEED OR SELECT</string>
+    <string name="location_spinner">location_spinner</string>
+    <string name="vehicle_spinner">vehicle_spinner</string>
+    <string name="driver_spinner">driver_spinner</string>
 
 </resources>

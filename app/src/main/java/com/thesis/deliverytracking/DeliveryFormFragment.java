@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.collection.LongSparseArray;
@@ -26,12 +27,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.firestore.auth.User;
 import com.thesis.deliverytracking.adapters.CustomSpinnerAdapter;
 import com.thesis.deliverytracking.misc.CustomUnderlineSpan;
@@ -45,6 +50,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeliveryFormFragment extends Fragment {
 
@@ -187,18 +193,54 @@ public class DeliveryFormFragment extends Fragment {
                 return;
             }
 
-            Map<String,Object> deliveryData = new HashMap<>();
-            deliveryData.put("number", Float.parseFloat(noDeliverySpinner.getSelectedItem().toString()));
-            deliveryData.put("driver", driverSpinner.getSelectedItem().toString());
-            deliveryData.put("vehicle", vehicleSpinner.getSelectedItem().toString());
-            deliveryData.put("location", locationSpinner.getSelectedItem().toString());
-            deliveryData.put("status", "Pending");
-            deliveryData.put("creationDate", FieldValue.serverTimestamp());
-            deliveryData.put("currentLocation", defaultDeliveryPosition);
-            firebaseFirestore.collection("deliveries")
-            .add(deliveryData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentReference> task) {
+
+//            firebaseFirestore.collection("deliveries")
+//            .add(deliveryData).addOnCompleteListener(task -> {
+//                if(task.isSuccessful()){
+//                    Toast.makeText(getContext(), "Delivery was created successfully"
+//                            , Toast.LENGTH_LONG).show();
+//
+//                    DeliveryListFragment fragment = new DeliveryListFragment();
+//                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.body_container, fragment).commit();
+//                }
+//                else{
+//                    Toast.makeText(getContext(), "Error creating delivery: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+//                }
+//            });
+
+
+            CollectionReference itemsCollection = firebaseFirestore.collection("deliveries");
+
+
+// Get the current primary key value from the database
+            AtomicInteger currentPrimaryKey = new AtomicInteger(0);
+
+            itemsCollection
+            .orderBy("primaryKey", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                for (DocumentSnapshot document : queryDocumentSnapshots) {
+                    Integer lastPrimaryKey = document.getLong("primaryKey").intValue();
+                    currentPrimaryKey.set(lastPrimaryKey);
+                }
+
+                // Create a new batch
+//                WriteBatch batch = FirebaseFirestore.getInstance().batch();
+                // Increment the primary key value
+                int newPrimaryKey = currentPrimaryKey.incrementAndGet();
+                Map<String,Object> deliveryData = new HashMap<>();
+                deliveryData.put("number", 1);
+                deliveryData.put("driver", driverSpinner.getSelectedItem().toString());
+                deliveryData.put("vehicle", vehicleSpinner.getSelectedItem().toString());
+                deliveryData.put("location", locationSpinner.getSelectedItem().toString());
+                deliveryData.put("status", "Pending");
+                deliveryData.put("creationDate", FieldValue.serverTimestamp());
+                deliveryData.put("currentLocation", defaultDeliveryPosition);
+                deliveryData.put("primaryKey", newPrimaryKey);
+
+                itemsCollection
+                .add(deliveryData).addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
                         Toast.makeText(getContext(), "Delivery was created successfully"
                                 , Toast.LENGTH_LONG).show();
@@ -209,7 +251,8 @@ public class DeliveryFormFragment extends Fragment {
                     else{
                         Toast.makeText(getContext(), "Error creating delivery: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
-                }
+                });
+
             });
         }
     };
@@ -219,10 +262,10 @@ public class DeliveryFormFragment extends Fragment {
             Toast.makeText(getContext(), "Please select a valid driver", Toast.LENGTH_LONG).show();
             return false;
         }
-        if(noDeliverySpinner.getSelectedItem().toString().isEmpty()){
-            Toast.makeText(getContext(), "Please select a valid no of delivery", Toast.LENGTH_LONG).show();
-            return false;
-        }
+//        if(noDeliverySpinner.getSelectedItem().toString().isEmpty()){
+//            Toast.makeText(getContext(), "Please select a valid no of delivery", Toast.LENGTH_LONG).show();
+//            return false;
+//        }
         if(vehicleSpinner.getSelectedItem().toString().isEmpty()){
             Toast.makeText(getContext(), "Please select a valid vehicle", Toast.LENGTH_LONG).show();
             return false;

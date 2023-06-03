@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.thesis.deliverytracking.models.Delivery;
@@ -62,8 +63,8 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
             holder.mGasConsumption.setVisibility(View.VISIBLE);
             holder.mGasConsumption.setText("Gas consumption: " + holder.mItem.gasConsumption + "L");
         }
-        holder.parent.setTag(holder.mItem);
-        holder.parent.setOnClickListener(view -> {
+        holder.btnProceed.setTag(holder.mItem);
+        holder.btnProceed.setOnClickListener(view -> {
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
 
             Bundle bundle = new Bundle();
@@ -83,7 +84,6 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View parent;
         public final TextView mIdView;
         public final TextView mDeliveryCreationDate;
         public final TextView mDeliveryNo;
@@ -91,11 +91,11 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
         public final TextView mDeliveryVehicle;
         public final TextView mDeliveryLocation;
         public final TextView mGasConsumption;
+        public final Button btnProceed;
         public Delivery mItem;
 
         public ViewHolder(FragmentDeliveryListBinding binding) {
             super(binding.getRoot());
-            parent = binding.parent;
             mIdView = binding.deliveryId;
             mDeliveryCreationDate = binding.deliveryCreationDate;
             mDeliveryNo = binding.deliveryNumber;
@@ -103,6 +103,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
             mDeliveryVehicle = binding.deliveryVehicle;
             mDeliveryLocation = binding.deliveryLocation;
             mGasConsumption = binding.txtGasConsumption;
+            btnProceed = binding.btnProceed;
         }
 
         @Override

@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TableLayout;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.firestore.DocumentChange;
@@ -211,7 +212,7 @@ public class DeliveryListFragment extends Fragment {
 //                    deliveries.add(delivery);
 //                }
 //            } else {
-////                                Log.d(TAG, "Error getting documents: ", task.getException());
+//                Toast.makeText(getActivity(), "Error getting documents: " + task.getException(), Toast.LENGTH_LONG).show();
 //            }
 //
 //            adapter = new DeliveryRecyclerViewAdapter(deliveries, getActivity(), userData);

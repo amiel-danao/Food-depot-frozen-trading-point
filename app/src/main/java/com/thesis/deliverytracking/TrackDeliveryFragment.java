@@ -71,6 +71,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.thesis.deliverytracking.misc.DistanceCalculator;
 import com.thesis.deliverytracking.models.Delivery;
 import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.UserInfo;
@@ -472,7 +473,15 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         }
     };
 
-    private void updateCurrentLocationInDB(GeoPoint geoPoint) {
+    private void updateCurrentLocationInDB(@NonNull GeoPoint geoPoint) {
+        float distance = DistanceCalculator.calculateDistance(geoPoint.getLatitude(), geoPoint.getLongitude(),
+                deliveryToView.currentLocation.getLatitude(), deliveryToView.currentLocation.getLongitude());
+
+        if(distance <= 0.5f)
+        {
+            return;
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("currentLocation", geoPoint);
 

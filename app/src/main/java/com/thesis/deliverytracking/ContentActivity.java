@@ -123,4 +123,24 @@ public class ContentActivity extends AppCompatActivity {
 
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        if(userData.role.equals("admin")){
+            super.onBackPressed();
+            return;
+        }
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.body_container);
+
+        if (fragment instanceof DeliveryListFragment) {
+            // Handle the back press event for the specific fragment
+            // You can show a message, do nothing, or perform a specific action
+            // To prevent the back press, don't call the super method
+
+        } else {
+            // Call the super method to allow the default back press behavior
+            super.onBackPressed();
+        }
+    }
 }

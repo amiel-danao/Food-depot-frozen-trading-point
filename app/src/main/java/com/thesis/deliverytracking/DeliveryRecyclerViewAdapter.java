@@ -54,7 +54,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
         }
         holder.mDeliveryNo.setText("No. of Delivery: " +  holder.mItem.number);
         holder.mDeliveryDriver.setText("Driver: " + holder.mItem.driver);
-        holder.mDeliveryVehicle.setText("Vehicle: " + holder.mItem.vehicle);
+        holder.mDeliveryVehicle.setText("Plate No.: " + holder.mItem.vehicle);
         holder.mDeliveryLocation.setText("Location: " + holder.mItem.location);
         if(holder.mItem.status.equals("Pending") || holder.mItem.status.equals("Ongoing")){
             holder.mGasConsumption.setVisibility(View.GONE);
@@ -91,7 +91,7 @@ public class DeliveryRecyclerViewAdapter extends RecyclerView.Adapter<DeliveryRe
         public final TextView mDeliveryVehicle;
         public final TextView mDeliveryLocation;
         public final TextView mGasConsumption;
-        public final Button btnProceed;
+        public final TextView btnProceed;
         public Delivery mItem;
 
         public ViewHolder(FragmentDeliveryListBinding binding) {

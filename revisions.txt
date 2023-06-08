@@ -1,0 +1,6 @@
+DONE*Login module - forgot password both admin and driver
+DONE*home UI - yung sa senend ko sir tapos tanggalin yung number of delivery
+DONE*(encountered issue kapag nag back ka galing deliveries papuntang home nag ooverlap siya nagpapatanong)
+DONE*Deliveries (admin-driver)- button sa pag select kung ano yung titignan or seselect.
+DONE*Deliveries (delivery list) - naka sort siya kung ano yung last na nalagay or bagong gawa siya yung nasa taas, tas yung delivery id sir diba parang naka code siya. baka pwede maging 0001-counting yung bilang
+DONE*Encountered issue (kapag nasa delivery track na stuck ata siya sa SM dasma na lugar. kahit nasa bacoor ako)

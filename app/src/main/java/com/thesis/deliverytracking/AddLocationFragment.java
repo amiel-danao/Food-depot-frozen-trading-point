@@ -80,6 +80,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
         if(locationToEdit != null){
             addressInput.getEditText().setText(locationToEdit.address);
+            locationNameInput.getEditText().setText(locationToEdit.locationName);
             btnAddLocation.setOnClickListener(updateClickListener);
         }
         else{
@@ -206,7 +207,12 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("Add new Location");
+        if(locationToEdit != null) {
+            toolbar.setTitle("Edit Location");
+        }
+        else{
+            toolbar.setTitle("Add new Location");
+        }
 
         SupportMapFragment mapFragment = (SupportMapFragment)getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -267,6 +273,10 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
         // Add a marker in Sydney and move the camera
         defaultLatLng = new LatLng(14.2999129, 120.9528338);
+
+        if(locationToEdit != null){
+            defaultLatLng = new LatLng(locationToEdit.position.getLatitude(), locationToEdit.position.getLongitude());
+        }
         marker = mMap.addMarker(new MarkerOptions()
                 .position(defaultLatLng).draggable(true));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(defaultLatLng));

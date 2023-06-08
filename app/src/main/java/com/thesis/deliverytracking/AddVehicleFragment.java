@@ -182,7 +182,12 @@ public class AddVehicleFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         ActionBar toolbar = ((AppCompatActivity)getActivity()).getSupportActionBar();
-        toolbar.setTitle("Register a Driver");
+        if(vehicleToEdit != null) {
+            toolbar.setTitle("Edit vehicle");
+        }
+        else{
+            toolbar.setTitle("Add new vehicle");
+        }
     }
 
     boolean plateValidation() {

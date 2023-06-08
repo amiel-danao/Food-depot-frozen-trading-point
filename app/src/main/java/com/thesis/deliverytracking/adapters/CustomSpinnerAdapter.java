@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.thesis.deliverytracking.R;
+import com.thesis.deliverytracking.models.Vehicle;
 
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class CustomSpinnerAdapter extends ArrayAdapter<String> {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.custom_spinner_dropdown_item, parent, false);
         }
+        convertView.setTag(data.get(position));
+
         TextView textView = convertView.findViewById(R.id.text1);
         textView.setText(data.get(position));
 
@@ -37,6 +40,8 @@ public class CustomSpinnerAdapter extends ArrayAdapter<String> {
         if (convertView == null) {
             convertView = inflater.inflate(android.R.layout.simple_spinner_dropdown_item, parent, false);
         }
+        convertView.setTag(data.get(position));
+
         TextView textView = convertView.findViewById(android.R.id.text1);
         textView.setText(data.get(position));
 

@@ -56,6 +56,25 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/txtFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:outlineSpotShadowColor="#ff0000"
+                android:textColorHint="@color/black"
+                android:theme="@style/EditTextHintBlue"
+                app:startIconDrawable="@drawable/ic_person">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Full Name"
+                    android:singleLine="true"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/blue_1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/txtrole"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
@@ -72,10 +91,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:completionThreshold="1"
-                    android:hint="Select a Role"
+                    android:hint="ROLE"
                     android:inputType="none"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/black" />
+                    android:textColorHint="@color/blue_1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -109,7 +128,7 @@
                 android:theme="@style/EditTextHintBlue"
                 app:endIconMode="password_toggle"
                 app:startIconDrawable="@drawable/ic_password">
-                >
+
 
                 <EditText
                     android:layout_width="match_parent"

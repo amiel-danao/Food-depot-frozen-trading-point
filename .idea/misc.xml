@@ -3,61 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.196" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/drawable/ic_launcher_background.xml" value="0.196" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/drawable/rounded_background.xml" value="0.2355" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/drawable/underline_text.xml" value="0.2415" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/activity_content.xml" value="0.13677536231884058" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/activity_main.xml" value="0.13677536231884058" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/custom_spinner_dropdown_item.xml" value="0.24010416666666667" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_add_location.xml" value="0.2006340579710145" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_add_vehicle.xml" value="0.25" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_form.xml" value="0.33" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_list.xml" value="0.33" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_list2.xml" value="0.25416666666666665" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_list2_list.xml" value="0.2682291666666667" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_list_list.xml" value="0.25" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_drivers.xml" value="0.1707193515704154" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_drivers_list.xml" value="0.18" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_google_map.xml" value="0.12082066869300911" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_home.xml" value="0.12082066869300911" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_locations.xml" value="0.2006340579710145" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_locations_list.xml" value="0.1875" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_login.xml" value="0.22" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_map.xml" value="0.13677536231884058" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_register.xml" value="0.13677536231884058" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_track_delivery.xml" value="0.22" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_vehicle.xml" value="0.1398176291793313" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_vehicle_list.xml" value="0.1707193515704154" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/toast_layout.xml" value="0.1671875" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/underline_text.xml" value="0.27447916666666666" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/menu/item_menu.xml" value="0.28854166666666664" />
-        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/menu/item_menu_driver.xml" value="0.16979166666666667" />
-        <entry key="..\:/Users/ELMEHDIAMLOU/AndroidStudioProjects/slider/app/src/main/res/layout/activity_main.xml" value="0.1793478260869565" />
-        <entry key="..\:/Users/ELMEHDIAMLOU/AndroidStudioProjects/slider/app/src/main/res/layout/fragment_home.xml" value="0.264" />
-        <entry key="..\:/Users/ELMEHDIAMLOU/AndroidStudioProjects/slider/app/src/main/res/layout/fragment_login.xml" value="0.264" />
-        <entry key="..\:/Users/ELMEHDIAMLOU/AndroidStudioProjects/slider/app/src/main/res/layout/fragment_register.xml" value="0.264" />
-        <entry key="..\:/slider/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2101851851851852" />
-        <entry key="..\:/slider/app/src/main/res/drawable/border_toast.xml" value="0.16018518518518518" />
-        <entry key="..\:/slider/app/src/main/res/drawable/ic_launcher_background.xml" value="0.2101851851851852" />
-        <entry key="..\:/slider/app/src/main/res/drawable/ic_map.xml" value="0.13148148148148148" />
-        <entry key="..\:/slider/app/src/main/res/drawable/ic_network_check.xml" value="0.16666666666666666" />
-        <entry key="..\:/slider/app/src/main/res/drawable/ic_orders.xml" value="0.2203125" />
-        <entry key="..\:/slider/app/src/main/res/drawable/item_selector.xml" value="0.13148148148148148" />
-        <entry key="..\:/slider/app/src/main/res/drawable/round_corner.xml" value="0.13148148148148148" />
-        <entry key="..\:/slider/app/src/main/res/layout/activity_content.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/layout/activity_main.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/layout/activity_pager.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_chat.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_google_map.xml" value="0.67" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_home.xml" value="0.12291666666666666" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_login.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_map.xml" value="0.22" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_register.xml" value="0.12291666666666666" />
-        <entry key="..\:/slider/app/src/main/res/layout/fragment_settings.xml" value="0.25" />
-        <entry key="..\:/slider/app/src/main/res/layout/toast_layout.xml" value="0.33" />
-        <entry key="..\:/slider/app/src/main/res/menu/item_menu.xml" value="0.1" />
-        <entry key="..\:/slider/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.18055555555555555" />
+        <entry key="..\:/Users/Administrator/Desktop/Frozen Food depot/app/src/main/res/layout/fragment_track_delivery.xml" value="0.22" />
       </map>
     </option>
   </component>

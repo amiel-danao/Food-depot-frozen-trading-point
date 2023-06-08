@@ -127,7 +127,7 @@
                 android:layout_weight=".4"
                 android:padding="3dp"
                 android:paddingEnd="0dp"
-                android:text="Vehicle:"
+                android:text="Plate No.:"
                 android:textAlignment="textEnd"
                 android:textColor="@color/orange_2"
                 android:textSize="24sp"

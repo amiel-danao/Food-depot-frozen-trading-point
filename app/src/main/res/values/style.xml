@@ -24,4 +24,13 @@
     <style name="SpinnerItem" parent="@android:style/Widget.TextView.SpinnerItem">
         <item name="android:textColor">@color/white</item>
     </style>
+
+    <style name="EditTextHighlightColor" parent="Widget.AppCompat.EditText">
+        <item name="android:textColorHighlight">@color/orange_2</item>
+    </style>
+    <style name="CustomTextSelectHandle">
+        <item name="android:textSelectHandle">@color/orange_2</item>
+    </style>
+
+
 </resources>

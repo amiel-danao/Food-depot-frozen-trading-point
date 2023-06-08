@@ -40,12 +40,12 @@ import java.util.regex.Pattern;
 
 public class RegisterFragment extends Fragment {
 
-    TextInputLayout Email, Username, Role, Password, confirmPasswordInput;
+    TextInputLayout Email, Username, Role, Password, confirmPasswordInput, FullName;
     String selectedRole = "Delivery";
     Button btnRegister;
     FirebaseAuth firebaseAuth;
     FirebaseFirestore firebaseFirestore;
-    String UserID, UserEmail, UserUsername, UserRole, UserPassword;
+    String UserID, UserEmail, UserUsername, UserRole, UserPassword, TxtFullName;
     UserInfo userToEdit;
 
     @Override
@@ -58,12 +58,7 @@ public class RegisterFragment extends Fragment {
         ArrayAdapter<String> aAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_dropdown_item_1line, rolesArray);
         eT.setAdapter(aAdapter);
 
-        eT.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedRole = (String) parent.getItemAtPosition(position);
-            }
-        });
+        eT.setOnItemClickListener((parent, view1, position, id) -> selectedRole = (String) parent.getItemAtPosition(position));
 
         if(getArguments() != null) {
             userToEdit = getArguments().getParcelable("id");
@@ -74,6 +69,7 @@ public class RegisterFragment extends Fragment {
         Role = view.findViewById(R.id.txtrole);
         Password = view.findViewById(R.id.txtpassword);
         confirmPasswordInput = view.findViewById(R.id.txtConfirmPassword);
+        FullName = view.findViewById(R.id.txtFullName);
         btnRegister = view.findViewById(R.id.btn_register);
 
         if(userToEdit != null){
@@ -82,6 +78,7 @@ public class RegisterFragment extends Fragment {
             Username.getEditText().setText(userToEdit.username);
             Role.getEditText().setText(userToEdit.role);
             Password.setVisibility(View.GONE);
+            FullName.getEditText().setText(userToEdit.fullName);
             confirmPasswordInput.setVisibility(View.GONE);
         }
 
@@ -98,13 +95,14 @@ public class RegisterFragment extends Fragment {
             if (!isNetworkAvailable(getContext())) {
                 showToast(R.drawable.ic_network_check, "Please verify your network.");
             } else {
-                if (!emailValidation() | !usernameValidation() | !roleValidation() | !passwordValidation()) {
+                if (!emailValidation() | !usernameValidation() | !fullNameValidation() | !passwordValidation()) {
                     return;
                 } else {
                     UserEmail = Email.getEditText().getText().toString();
                     UserUsername = Username.getEditText().getText().toString();
                     UserRole = selectedRole;
                     UserPassword = Password.getEditText().getText().toString();
+                    TxtFullName = FullName.getEditText().getText().toString();
                     String confirmPassword = confirmPasswordInput.getEditText().getText().toString();
 
                     if (UserPassword.isEmpty() || confirmPassword.isEmpty()) {
@@ -120,60 +118,63 @@ public class RegisterFragment extends Fragment {
                     }
 
                     firebaseAuth.createUserWithEmailAndPassword(UserEmail, UserPassword)
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                firebaseFirestore = FirebaseFirestore.getInstance();
-                                UserID = firebaseAuth.getCurrentUser().getUid();
-                                Map<String,Object> UserData = new HashMap<>();
-                                UserData.put("email", UserEmail);
-                                UserData.put("username", UserUsername);
-                                UserData.put("role", "Delivery");
-                                firebaseFirestore.collection("users")
-                                        .document(UserID)
-                                        .set(UserData)
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if(!task.isSuccessful()){
-                                                    Log.d("Storing",task.getException().getMessage());
-                                                }
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            firebaseFirestore = FirebaseFirestore.getInstance();
+                            UserID = firebaseAuth.getCurrentUser().getUid();
+                            Map<String,Object> UserData = new HashMap<>();
+                            UserData.put("email", UserEmail);
+                            UserData.put("username", UserUsername);
+                            UserData.put("role", "Delivery");
+                            UserData.put("fullName", TxtFullName);
+                            firebaseFirestore.collection("users")
+                                    .document(UserID)
+                                    .set(UserData)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if(!task.isSuccessful()){
+                                                Log.d("Storing",task.getException().getMessage());
                                             }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d("Storing",e.getMessage());
-                                            }
-                                        });
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d("Storing",e.getMessage());
+                                        }
+                                    });
 
-                                firebaseAuth.getCurrentUser().sendEmailVerification()
-                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                if (task.isSuccessful()) {
-                                                    showToast(R.drawable.ic_info, "User is registered successfully.\nPlease check your inbox for verification email.");
-                                                    getActivity().getSupportFragmentManager().popBackStack();
-                                                }
+                            firebaseAuth.getCurrentUser().sendEmailVerification()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            if (task.isSuccessful()) {
+                                                showToast(R.drawable.ic_info, "User is registered successfully.\nPlease check your inbox for verification email.");
+                                                getActivity().getSupportFragmentManager().popBackStack();
                                             }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d("Registration", task.getException().getMessage());
-                                            }
-                                        });
-                            }
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Log.d("Registration", task.getException().getMessage());
+                                        }
+                                    });
                         }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Email.setError(e.getMessage());
-                        }
-                    });
+                    }).addOnFailureListener(e -> Email.setError(e.getMessage()));
                 }
             }
         }
     };
+
+    private boolean fullNameValidation() {
+        String fullName = FullName.getEditText().getText().toString();
+        if (fullName.trim().isEmpty()) {
+            FullName.setError("Full name is required!");
+            return false;
+        }
+
+        return true;
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

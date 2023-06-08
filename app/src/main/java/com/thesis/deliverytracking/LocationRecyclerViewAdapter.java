@@ -15,10 +15,6 @@ import com.thesis.deliverytracking.databinding.FragmentLocationsBinding;
 
 import java.util.List;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link PlaceholderItem}.
- * TODO: Replace the implementation with code for your data type.
- */
 public class LocationRecyclerViewAdapter extends RecyclerView.Adapter<LocationRecyclerViewAdapter.ViewHolder> {
 
     private final List<Location> mValues;
@@ -41,8 +37,8 @@ public class LocationRecyclerViewAdapter extends RecyclerView.Adapter<LocationRe
         holder.mAddressView.setText(mValues.get(position).address);
         holder.mShortNameView.setText(mValues.get(position).locationName);
 
-        holder.parent.setTag(holder.mItem);
-        holder.parent.setOnClickListener(view -> {
+        holder.viewButton.setTag(holder.mItem);
+        holder.viewButton.setOnClickListener(view -> {
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
 
             Bundle bundle = new Bundle();
@@ -63,14 +59,14 @@ public class LocationRecyclerViewAdapter extends RecyclerView.Adapter<LocationRe
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView mAddressView;
         public final TextView mShortNameView;
-        public final View parent;
+        public final View viewButton;
         public Location mItem;
 
         public ViewHolder(FragmentLocationsBinding binding) {
             super(binding.getRoot());
             mAddressView = binding.address;
             mShortNameView = binding.shortName;
-            parent = binding.parent;
+            viewButton = binding.viewButton;
         }
 
     }

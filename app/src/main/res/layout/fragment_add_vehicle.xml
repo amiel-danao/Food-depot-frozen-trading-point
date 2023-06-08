@@ -41,9 +41,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
+                android:alwaysDrawnWithCache="true"
+                android:drawingCacheQuality="high"
                 android:outlineSpotShadowColor="#ff0000"
                 android:textColorHint="@color/black"
                 android:theme="@style/EditTextHintBlue"
+                app:endIconDrawable="@drawable/ic_kml_removebg"
+                app:endIconMinSize="10dp"
+                app:endIconMode="custom"
+                app:endIconScaleType="fitCenter"
+                app:endIconTint="@color/black"
                 app:startIconDrawable="@drawable/ic_baseline_local_gas_station_24">
 
                 <EditText
@@ -53,7 +60,7 @@
                     android:inputType="number"
                     android:singleLine="true"
                     android:textColor="@color/black"
-                    android:textColorHint="@color/blue_1"/>
+                    android:textColorHint="@color/blue_1" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout

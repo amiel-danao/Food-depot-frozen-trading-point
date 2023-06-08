@@ -22,26 +22,30 @@ public class Delivery implements Parcelable {
     public String vehicle;
     public String location;
     public GeoPoint currentLocation;
+    public GeoPoint startLocation;
     public GeoPoint destination;
     public String status;
     public Date creationDate;
     public float gasConsumption;
+    public float currentFuelPrice = 60;
     public int primaryKey = -1;
 
     public Delivery() {
     }
 
-    public Delivery(String id, int number, String driver, String vehicle, String location, GeoPoint currentLocation, GeoPoint destination, String status, Date creationDate, float gasConsumption, int primaryKey) {
+    public Delivery(String id, int number, String driver, String vehicle, String location, GeoPoint currentLocation, GeoPoint startLocation, GeoPoint destination, String status, Date creationDate, float gasConsumption, float currentFuelPrice, int primaryKey) {
         this.id = id;
         this.number = number;
         this.driver = driver;
         this.vehicle = vehicle;
         this.location = location;
         this.currentLocation = currentLocation;
+        this.startLocation = startLocation;
         this.destination = destination;
         this.status = status;
         this.creationDate = creationDate;
         this.gasConsumption = gasConsumption;
+        this.currentFuelPrice = currentFuelPrice;
         this.primaryKey = primaryKey;
     }
 
@@ -54,6 +58,7 @@ public class Delivery implements Parcelable {
         location = in.readString();
         status = in.readString();
         gasConsumption = in.readFloat();
+        currentFuelPrice = in.readFloat();
         primaryKey = in.readInt();
     }
 
@@ -66,6 +71,7 @@ public class Delivery implements Parcelable {
         dest.writeString(location);
         dest.writeString(status);
         dest.writeFloat(gasConsumption);
+        dest.writeFloat(currentFuelPrice);
         dest.writeInt(primaryKey);
     }
 

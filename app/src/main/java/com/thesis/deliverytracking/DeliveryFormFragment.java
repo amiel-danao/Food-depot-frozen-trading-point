@@ -1,34 +1,27 @@
 package com.thesis.deliverytracking;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.collection.LongSparseArray;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -36,16 +29,14 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.WriteBatch;
-import com.google.firebase.firestore.auth.User;
 import com.thesis.deliverytracking.adapters.CustomSpinnerAdapter;
+import com.thesis.deliverytracking.adapters.VehicleSpinnerAdapter;
 import com.thesis.deliverytracking.misc.CustomUnderlineSpan;
 import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.UserInfo;
 import com.thesis.deliverytracking.models.Vehicle;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -61,6 +52,7 @@ public class DeliveryFormFragment extends Fragment {
     private Button btnProceed;
     private FirebaseFirestore firebaseFirestore;
     private GeoPoint defaultDeliveryPosition = new GeoPoint(14.2999129, 120.9528338);
+    private Vehicle selectedVehicle;
 
     @Nullable
     @Override
@@ -93,6 +85,19 @@ public class DeliveryFormFragment extends Fragment {
         SpannableString contentLocation = new SpannableString(locationLabel.getText());
         contentLocation.setSpan(customUnderlineSpan, 0, contentLocation.length(), 0);
         locationLabel.setText(contentLocation);
+
+        vehicleSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedVehicle = (Vehicle)view.getTag();
+                Log.d("myLogTag", selectedVehicle.id);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         getDriverList();
 
@@ -136,16 +141,20 @@ public class DeliveryFormFragment extends Fragment {
     }
 
     private void populateVehicleSpinner(){
-        List<String> vehicleNames = new ArrayList<>();
+        List<Vehicle> vehicleNames = new ArrayList<>();
         for (Map.Entry<String, Vehicle> entry : vehicles.entrySet()) {
             String key = entry.getKey();
             Vehicle val = entry.getValue();
+            val.setId(key);
+            vehicleNames.add(val);
 
-            vehicleNames.add(val.plateNumber);
+            if(selectedVehicle == null){
+                selectedVehicle = val;
+            }
         }
 
         if(getActivity() != null) {
-            CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(getContext(), R.layout.custom_spinner_dropdown_item, vehicleNames);
+            VehicleSpinnerAdapter adapter = new VehicleSpinnerAdapter(getContext(), R.layout.custom_spinner_dropdown_item, vehicleNames);
             vehicleSpinner.setAdapter(adapter);
             getLocationList();
         }
@@ -193,22 +202,6 @@ public class DeliveryFormFragment extends Fragment {
                 return;
             }
 
-
-//            firebaseFirestore.collection("deliveries")
-//            .add(deliveryData).addOnCompleteListener(task -> {
-//                if(task.isSuccessful()){
-//                    Toast.makeText(getContext(), "Delivery was created successfully"
-//                            , Toast.LENGTH_LONG).show();
-//
-//                    DeliveryListFragment fragment = new DeliveryListFragment();
-//                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.body_container, fragment).commit();
-//                }
-//                else{
-//                    Toast.makeText(getContext(), "Error creating delivery: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-//                }
-//            });
-
-
             CollectionReference itemsCollection = firebaseFirestore.collection("deliveries");
 
 
@@ -238,6 +231,11 @@ public class DeliveryFormFragment extends Fragment {
                 deliveryData.put("creationDate", FieldValue.serverTimestamp());
                 deliveryData.put("currentLocation", defaultDeliveryPosition);
                 deliveryData.put("primaryKey", newPrimaryKey);
+                float gas = 0;
+                if (selectedVehicle != null){
+                    gas = selectedVehicle.gas;
+                }
+                deliveryData.put("gasConsumption", String.valueOf(gas));
 
                 itemsCollection
                 .add(deliveryData).addOnCompleteListener(task -> {

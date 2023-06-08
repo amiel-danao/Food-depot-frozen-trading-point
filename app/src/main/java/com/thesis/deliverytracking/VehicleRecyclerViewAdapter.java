@@ -38,8 +38,8 @@ public class VehicleRecyclerViewAdapter extends RecyclerView.Adapter<VehicleRecy
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).plateNumber);
         holder.mContentView.setText(mValues.get(position).vehicleType);
-        holder.parent.setTag(holder.mItem);
-        holder.parent.setOnClickListener(view -> {
+        holder.editView.setTag(holder.mItem);
+        holder.editView.setOnClickListener(view -> {
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
 
             Bundle bundle = new Bundle();
@@ -60,14 +60,14 @@ public class VehicleRecyclerViewAdapter extends RecyclerView.Adapter<VehicleRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView mIdView;
         public final TextView mContentView;
-        public final View parent;
+        public final View editView;
         public Vehicle mItem;
 
         public ViewHolder(FragmentVehicleBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;
-            parent = binding.parent;
+            editView = binding.editView;
         }
 
         @Override

@@ -1,12 +1,9 @@
 package com.thesis.deliverytracking;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationListener;
@@ -14,8 +11,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -26,9 +21,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.os.Handler;
-import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,22 +53,20 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.ListResult;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.thesis.deliverytracking.misc.DistanceCalculator;
 import com.thesis.deliverytracking.models.Delivery;
 import com.thesis.deliverytracking.models.Location;
 import com.thesis.deliverytracking.models.UserInfo;
+import com.thesis.deliverytracking.models.Vehicle;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,14 +75,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import android.Manifest;
 
-import droidninja.filepicker.FilePickerBuilder;
-import droidninja.filepicker.FilePickerConst;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallback, RoutingListener, LocationListener {
@@ -125,8 +111,10 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     private Timer timer;
     private Thread thread;
     private Button btnRemoveImage;
-    private EditText editGasConsumed;
+    private EditText editFuelPrice;
     private Routing routing;
+    private TextView txtTotalFuelConsumption, txtVehicleFuelConsumption, txtTotalDistanceTraveled, txtFuelCurrentPrice;
+    private View completeSummary, summary;
 
 
     public TrackDeliveryFragment() {
@@ -149,7 +137,13 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         btnUpload = view.findViewById(R.id.btnUpload);
         uploadPicture = view.findViewById(R.id.uploadPicture);
         btnRemoveImage = view.findViewById(R.id.btnRemoveImage);
-        editGasConsumed = view.findViewById(R.id.editGasConsumed);
+        editFuelPrice = view.findViewById(R.id.editFuelPrice);
+        txtTotalFuelConsumption = view.findViewById(R.id.txtTotalFuelConsumption);
+        txtVehicleFuelConsumption = view.findViewById(R.id.txtVehicleFuelConsumption);
+        txtTotalDistanceTraveled = view.findViewById(R.id.txtTotalDistanceTraveled);
+        txtFuelCurrentPrice = view.findViewById(R.id.txtFuelCurrentPrice);
+        completeSummary = view.findViewById(R.id.completeSummary);
+        summary = view.findViewById(R.id.summary);
 
         if (getArguments() != null) {
             deliveryToView = getArguments().getParcelable("id");
@@ -172,20 +166,15 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                 }
             }
             else if(userData.role.equals("admin")){
-                editGasConsumed.setEnabled(false);
+                editFuelPrice.setEnabled(false);
                 if(deliveryToView.status.equals("For Approval")) {
                     uploadParent.setVisibility(View.VISIBLE);
                     btnRemoveImage.setVisibility(View.GONE);
                     btnUpload.setVisibility(View.GONE);
                     btnDriverAction.setVisibility(View.VISIBLE);
-                    editGasConsumed.setText("Gas consumed: " + String.valueOf(deliveryToView.gasConsumption) + "L");
+                    editFuelPrice.setText("CURRENT FUEL PRICE: " + deliveryToView.gasConsumption + "L");
                     btnDriverAction.setText("Approve this delivery");
-                    btnDriverAction.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            setDeliveryStatus("Completed");
-                        }
-                    });
+                    btnDriverAction.setOnClickListener(v -> setDeliveryStatus("Completed"));
                     fetchDeliveryUploadedPhoto();
                 }
             }
@@ -212,7 +201,53 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         txtCurrentLocation = view.findViewById(R.id.txtCurrentLocation);
         txtDestination = view.findViewById(R.id.txtDestination);
 
+        if(deliveryToView != null && deliveryToView.status.equals("Completed")){
+            mapFragment.getView().setVisibility(View.GONE);
+            uploadParent.setVisibility(View.VISIBLE);
+            btnRemoveImage.setVisibility(View.GONE);
+            btnUpload.setVisibility(View.GONE);
+            btnDriverAction.setVisibility(View.GONE);
+            summary.setVisibility(View.GONE);
+            editFuelPrice.setEnabled(false);
+            editFuelPrice.setText("CURRENT FUEL PRICE: " + deliveryToView.gasConsumption + " L");
+            fetchDeliveryUploadedPhoto();
+            computeTotalFuelConsumption();
+        }
+
         return view;
+    }
+
+    private void computeTotalFuelConsumption() {
+        FirebaseFirestore.getInstance().collection("locations").whereEqualTo("locationName", deliveryToView.location)
+        .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()){
+                    List<Location> destinations = task.getResult().toObjects(Location.class);
+                    if(destinations.isEmpty()){
+                        return;
+                    }
+
+                    Location destination = destinations.get(0);
+                    GeoPoint startLocation = deliveryToView.currentLocation;
+                    if(deliveryToView.startLocation != null){
+                        startLocation = deliveryToView.startLocation;
+                    }
+                    float distance = DistanceCalculator.calculateDistance(startLocation.getLatitude(), startLocation.getLongitude(), destination.position.getLatitude(), destination.position.getLongitude());
+
+                    float totalFuelConsumption = distance / deliveryToView.gasConsumption * deliveryToView.currentFuelPrice;
+                    txtVehicleFuelConsumption.setText("VEHICLE FUEL CONSUMPTION: " + deliveryToView.gasConsumption + " km/L");
+                    txtTotalDistanceTraveled.setText("TOTAL DISTANCE TRAVELED: " + distance +" km");
+                    txtFuelCurrentPrice.setText("FUEL CURRENT PRICE: " + deliveryToView.currentFuelPrice +" L");
+
+                    txtTotalFuelConsumption.setText("TOTAL FUEL CONSUMPTION: " + totalFuelConsumption);
+                    completeSummary.setVisibility(View.VISIBLE);
+                }
+                else{
+                    Toast.makeText(getActivity(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     private void fetchDeliveryUploadedPhoto() {
@@ -241,7 +276,13 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
             btnDriverAction.setText("Waiting for approval");
         }
         else if (deliveryToView.status.equals("Completed")){
-            uploadParent.setVisibility(View.GONE);
+            uploadParent.setVisibility(View.VISIBLE);
+            btnRemoveImage.setVisibility(View.GONE);
+            btnUpload.setVisibility(View.GONE);
+            btnDriverAction.setVisibility(View.VISIBLE);
+            editFuelPrice.setEnabled(false);
+            editFuelPrice.setText("CURRENT FUEL PRICE: " + deliveryToView.gasConsumption + "L");
+
             btnDriverAction.setEnabled(false);
             btnDriverAction.setText("This delivery was completed");
         }
@@ -288,7 +329,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
     };
 
     private boolean isGasConsumptionValid() {
-        String gas = editGasConsumed.getText().toString().trim();
+        String gas = editFuelPrice.getText().toString().trim();
 
         if(gas.isEmpty() || Float.parseFloat(gas) <= 0){
             return false;
@@ -333,7 +374,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         Map<String, Object> data = new HashMap<>();
         data.put("status", status);
         if(status.equals("For Approval")){
-            data.put("gasConsumption", Float.parseFloat(editGasConsumed.getText().toString()));
+            data.put("currentFuelPrice", Float.parseFloat(editFuelPrice.getText().toString()));
         }
 
         firebaseFirestore.collection("deliveries").document(deliveryToView.id)

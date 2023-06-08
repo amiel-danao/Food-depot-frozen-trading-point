@@ -26,7 +26,7 @@ public class Delivery implements Parcelable {
     public GeoPoint destination;
     public String status;
     public Date creationDate;
-    public float gasConsumption;
+    public float gasConsumption = 10;
     public float currentFuelPrice = 60;
     public int primaryKey = -1;
 

@@ -235,7 +235,7 @@ public class DeliveryFormFragment extends Fragment {
                 if (selectedVehicle != null){
                     gas = selectedVehicle.gas;
                 }
-                deliveryData.put("gasConsumption", String.valueOf(gas));
+                deliveryData.put("gasConsumption",gas);
 
                 itemsCollection
                 .add(deliveryData).addOnCompleteListener(task -> {

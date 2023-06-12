@@ -1,5 +1,7 @@
 package com.thesis.deliverytracking;
 
+import static androidx.fragment.app.FragmentManager.TAG;
+
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -11,6 +13,9 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +26,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -31,7 +37,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.DocumentReference;
@@ -41,6 +56,7 @@ import com.thesis.deliverytracking.models.Location;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,11 +64,13 @@ import java.util.Map;
 
 public class AddLocationFragment extends Fragment implements OnMapReadyCallback {
 
-    TextInputLayout addressInput, locationNameInput;
+    private AutocompleteSupportFragment searchField;
+    private EditText placesField;
+    private PlacesClient placesClient;
+    TextInputLayout addressInput;
     FloatingActionButton btnAddLocation;
     FirebaseFirestore firebaseFirestore;
     String address, locationName;
-    float gas;
     Location locationToEdit;
     private GoogleMap mMap;
     private UiSettings mUiSettings;
@@ -72,20 +90,59 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
         }
 
         addressInput = view.findViewById(R.id.txtAddress);
-        locationNameInput = view.findViewById(R.id.locationNameInput);
         btnAddLocation = view.findViewById(R.id.btn_add_location);
         fabLocate = view.findViewById(R.id.fabLocate);
+        Places.initialize(getActivity(), getActivity().getResources().getString(R.string.google_api_key));
+        placesClient = Places.createClient(getActivity());
+
+
+//        AutocompleteSupportFragment autocompleteFragment = (AutocompleteSupportFragment)
+//                getActivity().getSupportFragmentManager().findFragmentById(R.id.map);
+//        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.LAT_LNG, Place.Field.NAME));
+//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+//            @Override
+//            public void onPlaceSelected(@NonNull Place place) {
+//                LatLng latLng = place.getLatLng();
+//                if (latLng != null) {
+//                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+//                }
+//            }
+//
+//            @Override
+//            public void onError(@NonNull Status status) {
+//                // Handle the error
+//            }
+//        });
+
+//        searchField.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+//                // Get selected place from autocomplete suggestions
+//                AutocompletePrediction selectedPlace = (AutocompletePrediction) adapterView.getItemAtPosition(position);
+//                String placeId = selectedPlace.getPlaceId();
+//
+//                // Fetch place details using the place ID
+//                FetchPlaceRequest request = FetchPlaceRequest.newInstance(placeId, Arrays.asList(Place.Field.LAT_LNG));
+//                placesClient.fetchPlace(request).addOnSuccessListener(new OnSuccessListener<FetchPlaceResponse>() {
+//                    @Override
+//                    public void onSuccess(FetchPlaceResponse fetchPlaceResponse) {
+//                        Place place = fetchPlaceResponse.getPlace();
+//                        LatLng latLng = place.getLatLng();
+//                        if (latLng != null) {
+//                            // Move the map camera to the selected location
+//                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+//                        }
+//                    }
+//                }).addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        // Handle the error
+//                    }
+//                });
+//            }
+//        });
 
         firebaseFirestore = firebaseFirestore.getInstance();
-
-        if(locationToEdit != null){
-            addressInput.getEditText().setText(locationToEdit.address);
-            locationNameInput.getEditText().setText(locationToEdit.locationName);
-            btnAddLocation.setOnClickListener(updateClickListener);
-        }
-        else{
-            btnAddLocation.setOnClickListener(addClickListener);
-        }
 
         fabLocate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,7 +164,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
             } else {
 
                 address = addressInput.getEditText().getText().toString();
-                locationName = locationNameInput.getEditText().getText().toString();
+                locationName = placesField.getText().toString();
 
                 if (!addressValidation()  || !locationNameValidation()) {
                     return;
@@ -128,8 +185,8 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                             Map<String,Object> locationData = new HashMap<>();
                             locationData.put("locationName", locationName);
                             locationData.put("address", address);
-                            locationData.put("position", marker.getPosition());
-                            firebaseFirestore.collection("vehicles")
+                            locationData.put("position", new GeoPoint(marker.getPosition().latitude, marker.getPosition().longitude));
+                            firebaseFirestore.collection("locations")
                             .document(locationToEdit.id)
                             .set(locationData)
                             .addOnCompleteListener(task2 -> {
@@ -137,8 +194,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                                     Log.d("Storing",task2.getException().getMessage());
                                 }
                                 else{
-                                    Toast.makeText(getContext(), "Vehicle was updated successfully" +
-                                            "", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getContext(), "Location was updated successfully", Toast.LENGTH_LONG).show();
 
                                     getParentFragmentManager().popBackStackImmediate();
                                 }
@@ -160,7 +216,7 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
                     return;
                 } else {
                     address = addressInput.getEditText().getText().toString();
-                    locationName = locationNameInput.getEditText().getText().toString();
+                    locationName = placesField.getText().toString();
 
                     firebaseFirestore.collection("locations").whereEqualTo("locationName", locationName).get()
                     .addOnCompleteListener(task -> {
@@ -230,9 +286,9 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
     }
 
     boolean locationNameValidation() {
-        String locationName = locationNameInput.getEditText().getText().toString();
+        String locationName = placesField.getText().toString();
         if (locationName.isEmpty()) {
-            locationNameInput.setError("Please enter a short name");
+            placesField.setError("Please enter a short name");
             return false;
         } else {
             return true;
@@ -300,6 +356,44 @@ public class AddLocationFragment extends Fragment implements OnMapReadyCallback 
 
             }
         });
+
+
+        searchField = (AutocompleteSupportFragment)
+                getChildFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+
+        // Specify the types of place data to return.
+        searchField.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG));
+        searchField.setCountries("PH");
+        placesField = searchField.getView().findViewById(R.id.places_autocomplete_search_input);
+        // Set up a PlaceSelectionListener to handle the response.
+        searchField.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(@NonNull Place place) {
+                // TODO: Get info about the selected place.
+                Log.i("myLogTag", "Place: " + place.getName() + ", " + place.getId());
+                LatLng latLng = place.getLatLng();
+                if (latLng != null) {
+                    marker.setPosition(latLng);
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+                    addressInput.getEditText().setText(place.getAddress());
+                }
+            }
+
+            @Override
+            public void onError(@NonNull Status status) {
+                // TODO: Handle the error.
+                Log.i("myLogTag", "An error occurred: " + status);
+            }
+        });
+
+        if(locationToEdit != null){
+            addressInput.getEditText().setText(locationToEdit.address);
+            searchField.setText(locationToEdit.locationName);
+            btnAddLocation.setOnClickListener(updateClickListener);
+        }
+        else{
+            btnAddLocation.setOnClickListener(addClickListener);
+        }
 
     }
 

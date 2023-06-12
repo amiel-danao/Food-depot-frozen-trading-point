@@ -97,6 +97,6 @@
     <string name="location_spinner">location_spinner</string>
     <string name="vehicle_spinner">vehicle_spinner</string>
     <string name="driver_spinner">driver_spinner</string>
-    <string name="text_password">text_password</string>
+    <string name="text_password">Password</string>
 
 </resources>

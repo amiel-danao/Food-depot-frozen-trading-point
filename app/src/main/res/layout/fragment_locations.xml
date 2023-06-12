@@ -11,6 +11,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
         android:layout_weight=".4"
+        android:ellipsize="end"
+        android:maxLines="2"
         android:textAppearance="?attr/textAppearanceListItem" />
 
     <TextView

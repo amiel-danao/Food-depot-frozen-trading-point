@@ -29,7 +29,7 @@
         android:layout_height="match_parent"
         android:layout_weight=".2"
         android:gravity="center"
-        android:text="VIEW"
+        android:text="EDIT"
         android:textColor="@color/orange_2"
         android:textStyle="bold|italic" />
 </LinearLayout>

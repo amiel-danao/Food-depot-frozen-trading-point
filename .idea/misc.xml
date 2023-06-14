@@ -5,7 +5,15 @@
       <map>
         <entry key="..\:/Users/Administrator/Desktop/Frozen Food depot/app/src/main/res/layout/fragment_track_delivery.xml" value="0.22" />
         <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_add_location.xml" value="0.25" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_add_vehicle.xml" value="0.21145833333333333" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_form.xml" value="0.19814814814814816" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_delivery_list.xml" value="0.175" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_drivers.xml" value="0.21145833333333333" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_drivers_list.xml" value="0.21145833333333333" />
         <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_locations.xml" value="0.2078125" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_register.xml" value="0.21145833333333333" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_track_delivery.xml" value="0.21145833333333333" />
+        <entry key="..\:/Users/Administrator/Documents/Github/delivery-tracking-main/app/src/main/res/layout/fragment_vehicle.xml" value="0.21145833333333333" />
       </map>
     </option>
   </component>

@@ -81,7 +81,7 @@ import android.Manifest;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallback, RoutingListener, LocationListener {
+public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallback, RoutingListener, LocationListener, EasyPermissions.PermissionCallbacks {
 
     private static final String GOOGLE_MAP_KEY = "AIzaSyCOHULVKTJ1Ngz8NGIKv_IMXR4InhJv4O8";
     private GoogleMap map;
@@ -235,6 +235,17 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                     }
                     float distance = DistanceCalculator.calculateDistance(startLocation.getLatitude(), startLocation.getLongitude(), destination.position.getLatitude(), destination.position.getLongitude());
 
+                    float[] results = new float[1];
+                    android.location.Location.distanceBetween(startLocation.getLatitude(), startLocation.getLongitude(), destination.position.getLatitude(), destination.position.getLongitude(), results);
+
+                    if (results.length > 0) {
+                        distance = results[0] / 1000;
+                        for (float f :
+                                results) {
+                            Log.d("myLogTag", String.valueOf(f));
+                        }
+                    }
+
                     float totalFuelConsumption = distance / deliveryToView.gasConsumption * deliveryToView.currentFuelPrice;
                     txtVehicleFuelConsumption.setText("VEHICLE FUEL CONSUMPTION: " + deliveryToView.gasConsumption + " km/L");
                     txtTotalDistanceTraveled.setText("TOTAL DISTANCE TRAVELED: " + distance +" km");
@@ -266,6 +277,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
     private void updateDriverActionButton() {
         btnDriverAction.setVisibility(View.VISIBLE);
+        btnDriverAction.setOnClickListener(null);
         if (deliveryToView.status.equals("Ongoing")) {
             btnDriverAction.setOnClickListener(successDeliveryClickListener);
             btnUpload.setOnClickListener(uploadClickListener);
@@ -279,10 +291,10 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
             uploadParent.setVisibility(View.VISIBLE);
             btnRemoveImage.setVisibility(View.GONE);
             btnUpload.setVisibility(View.GONE);
-            btnDriverAction.setVisibility(View.VISIBLE);
+            btnDriverAction.setVisibility(View.GONE);
             editFuelPrice.setEnabled(false);
             editFuelPrice.setText("CURRENT FUEL PRICE: " + deliveryToView.gasConsumption + "L");
-
+            summary.setVisibility(View.GONE);
             btnDriverAction.setEnabled(false);
             btnDriverAction.setText("This delivery was completed");
         }
@@ -294,7 +306,7 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
             if (filePath == null) {
                 String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
 
-                if (EasyPermissions.hasPermissions(getContext(), permissions)) {
+                if (EasyPermissions.hasPermissions(getActivity(), permissions)) {
                     imagePicker();
                 } else {
                     EasyPermissions.requestPermissions(getActivity(), "App need access to your camera and storage", 100, permissions);
@@ -362,6 +374,28 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                 }
             });
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
+
+    @Override
+    public void onPermissionsGranted(int requestCode, List<String> list) {
+        // Some permissions have been granted
+        // ...
+        if (requestCode == 100){
+            imagePicker();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, List<String> list) {
+        // Some permissions have been denied
+    }
+
     private final View.OnClickListener successDeliveryClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -378,18 +412,19 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
         }
 
         firebaseFirestore.collection("deliveries").document(deliveryToView.id)
-                .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Toast.makeText(getContext(), "Delivery status was updated successfully : " + status, Toast.LENGTH_SHORT).show();
+        .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(getActivity(), "Delivery status was updated successfully : " + status, Toast.LENGTH_SHORT).show();
 
-                        deliveryToView.status = status;
-                        if(status.equals("For Approval") || status.equals("Completed")){
-                            updateDriverActionButton();
-                        }
-                    }
-                });
+                deliveryToView.status = status;
+//                        if(status.equals("For Approval") || status.equals("Completed")){
+                updateDriverActionButton();
+//                        }
+            }
+        });
     }
+
 
     private void getDestination() {
         if (deliveryToView == null) {
@@ -525,6 +560,9 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
 
         Map<String, Object> data = new HashMap<>();
         data.put("currentLocation", geoPoint);
+        if(deliveryToView != null && deliveryToView.startLocation == null){
+            data.put("startLocation", geoPoint);
+        }
 
         firebaseFirestore.collection("deliveries").document(deliveryToView.id)
         .set(data, SetOptions.merge()).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -555,7 +593,6 @@ public class TrackDeliveryFragment extends Fragment implements OnMapReadyCallbac
                     .key(GOOGLE_MAP_KEY)
                     .build();
             routing.execute();
-
         }
     }
 

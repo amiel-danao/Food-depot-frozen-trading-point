@@ -42,8 +42,8 @@ public class DriversRecyclerViewAdapter extends RecyclerView.Adapter<DriversRecy
         holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).id);
         holder.mContentView.setText(mValues.get(position).username);
-        holder.parent.setTag(holder.mItem);
-        holder.parent.setOnClickListener(view -> {
+        holder.editView.setTag(holder.mItem);
+        holder.editView.setOnClickListener(view -> {
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
 
             Bundle bundle = new Bundle();
@@ -64,14 +64,14 @@ public class DriversRecyclerViewAdapter extends RecyclerView.Adapter<DriversRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView mIdView;
         public final TextView mContentView;
-        public final View parent;
+        public final View editView;
         public UserInfo mItem;
 
         public ViewHolder(FragmentDriversBinding binding) {
             super(binding.getRoot());
             mIdView = binding.itemNumber;
             mContentView = binding.content;
-            parent = binding.parent;
+            editView = binding.editView2;
         }
 
         @Override

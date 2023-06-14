@@ -122,7 +122,6 @@ public class DeliveryFormFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("vehicles")
-        .whereEqualTo("status", "available")
         .get()
         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -225,7 +224,15 @@ public class DeliveryFormFragment extends Fragment {
                 Map<String,Object> deliveryData = new HashMap<>();
                 deliveryData.put("number", 1);
                 deliveryData.put("driver", driverSpinner.getSelectedItem().toString());
-                deliveryData.put("vehicle", vehicleSpinner.getSelectedItem().toString());
+
+                if(selectedVehicle != null) {
+                    deliveryData.put("vehicle", selectedVehicle.plateNumber);
+                }
+                else{
+                    if(!vehicles.isEmpty()) {
+                        deliveryData.put("vehicle", ((Vehicle) vehicles.values().toArray()[0]).plateNumber);
+                    }
+                }
                 deliveryData.put("location", locationSpinner.getSelectedItem().toString());
                 deliveryData.put("status", "Pending");
                 deliveryData.put("creationDate", FieldValue.serverTimestamp());

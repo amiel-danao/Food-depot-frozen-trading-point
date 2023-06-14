@@ -57,7 +57,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Fuel Consumption"
-                    android:inputType="number"
+                    android:inputType="number|numberDecimal"
                     android:singleLine="true"
                     android:textColor="@color/black"
                     android:textColorHint="@color/blue_1" />

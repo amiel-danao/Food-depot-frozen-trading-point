@@ -32,22 +32,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <LinearLayout
-
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical"
-
-            >
-
-
             <LinearLayout
 
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtPermissionWarning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="NOTE: Location permission was previously not granted, the app will not be available to update the current location of your delivery. Please grant permission in the settings"
+                    android:textColor="@color/orange_2"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <Button
                     android:id="@+id/btnRemoveImage"
@@ -82,19 +81,8 @@
                     android:layout_height="wrap_content"
                     android:text="Upload" />
 
+
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/txtPermissionWarning"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="NOTE: Location permission was previously not granted, the app will not be available to update the current location of your delivery. Please grant permission in the settings"
-                android:textColor="@color/orange_2"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
-        </LinearLayout>
 
     </ScrollView>
 

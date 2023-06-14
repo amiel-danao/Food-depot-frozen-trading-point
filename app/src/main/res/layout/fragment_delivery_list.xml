@@ -99,7 +99,7 @@
             android:layout_height="match_parent"
             android:layout_weight="0.1"
             android:gravity="right|center_vertical"
-            android:text="EDIT"
+            android:text="VIEW"
             android:textColor="@color/orange_2"
             android:textStyle="bold|italic" />
     </LinearLayout>
